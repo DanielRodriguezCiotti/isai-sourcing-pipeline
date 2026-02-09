@@ -8,9 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
-terraform/.terraform/modules/modules.json
-terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/6.3.0/darwin_arm64/LICENSE.txt
-terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/6.3.0/darwin_arm64/terraform-provider-aws_v6.3.0_x5
-terraform/.terraform/providers/registry.terraform.io/prefecthq/prefect/2.28.0/darwin_arm64/LICENSE
-terraform/.terraform/providers/registry.terraform.io/prefecthq/prefect/2.28.0/darwin_arm64/README.md
-terraform/.terraform/providers/registry.terraform.io/prefecthq/prefect/2.28.0/darwin_arm64/terraform-provider-prefect_v2.28.0
+terraform/.terraform/*
+terraform/terraform-var.env
+.env
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
