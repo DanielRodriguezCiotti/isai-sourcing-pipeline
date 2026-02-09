@@ -1,13 +1,6 @@
 # Prefect Work Pools Module
-# Manages both fast (process) and slow (ecs:push) work pools
+# Manages (ecs:push) work pool
 
-# Fast work pool (process type) for lightweight tasks
-resource "prefect_work_pool" "fast_pool" {
-  name         = var.fast_pool_name
-  type         = "process"
-  workspace_id = var.workspace_id
-  paused       = false
-}
 
 # AWS credentials block for ECS work pool
 resource "prefect_block" "aws_credentials" {
@@ -22,7 +15,7 @@ resource "prefect_block" "aws_credentials" {
 
 # Slow work pool (ecs:push type) for compute-intensive tasks
 resource "prefect_work_pool" "ecs_work_pool" {
-  name         = var.slow_pool_name
+  name         = var.pool_name
   type         = "ecs:push"
   workspace_id = var.workspace_id
   paused       = false
@@ -39,6 +32,7 @@ resource "prefect_work_pool" "ecs_work_pool" {
     execution_role_arn = var.execution_role_arn
     subnets            = var.subnets
     security_groups    = var.security_groups
-    slow_pool_memory   = var.slow_pool_memory
+    pool_memory   = var.pool_memory
+    pool_cpu = var.pool_cpu
   })
 }

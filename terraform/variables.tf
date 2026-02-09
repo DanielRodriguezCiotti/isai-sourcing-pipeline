@@ -55,7 +55,7 @@ variable "prefect_config" {
   sensitive = true
 }
 
-variable "work_pools" {
+variable "work_pool" {
   description = "Work pool configuration"
   type = object({
     pool_name = string

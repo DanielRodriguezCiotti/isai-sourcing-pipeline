@@ -1,31 +1,8 @@
-output "ecs_cluster_arn" {
-  description = "ARN of the ECS cluster"
-  value       = module.ecs.cluster_arn
-}
 
-output "ecs_cluster_name" {
-  description = "Name of the ECS cluster"
-  value       = module.ecs.cluster_name
-}
 
 output "task_execution_role_arn" {
   description = "ARN of the task execution role"
   value       = module.iam.task_execution_role_arn
-}
-
-output "task_definition_arn" {
-  description = "ARN of the task definition"
-  value       = module.ecs.task_definition_arn
-}
-
-output "task_definition_name" {
-  description = "Name of the task definition"
-  value       = module.ecs.task_definition_name
-}
-
-output "ecs_service_name" {
-  description = "Name of the ECS service"
-  value       = module.ecs.service_name
 }
 
 output "task_role_arn" {

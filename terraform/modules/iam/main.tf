@@ -63,19 +63,10 @@ resource "aws_iam_role" "task" {
   tags = var.tags
 }
 
-resource "aws_iam_role_policy_attachment" "s3_access" {
-  role       = aws_iam_role.task.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-}
 
 resource "aws_iam_role_policy_attachment" "cloudwatch_access" {
   role       = aws_iam_role.task.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
-}
-
-resource "aws_iam_role_policy_attachment" "sqs_access" {
-  role       = aws_iam_role.task.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
 }
 
 # Add Secrets Manager permissions to task role as well

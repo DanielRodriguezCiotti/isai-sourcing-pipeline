@@ -20,30 +20,9 @@
                 "image": "{{ image }}",
                 "secrets": [
                     {
-                        "name": "GOOGLE_CREDENTIALS",
-                        "valueFrom": "${secrets_arn}:google-credentials::"
-                    },
-                    {
-                        "name": "FAL_API_KEY",
-                        "valueFrom": "${secrets_arn}:fal-api-key::"
-                    },
-                    {
-                        "name": "ACA_API_KEY",
-                        "valueFrom": "${secrets_arn}:aca-api-key::"
-                    },
-                    {
-                        "name": "PREFECT_API_KEY",
-                        "valueFrom": "${secrets_arn}:prefect-api-key::"
-                    },
-                    {
-                        "name": "MODAL_TOKEN_ID",
-                        "valueFrom": "${secrets_arn}:modal-token-id::"
-                    },
-                    {
-                        "name": "MODAL_TOKEN_SECRET",
-                        "valueFrom": "${secrets_arn}:modal-token-secret::"
+                        "name": "LLM_API_KEY",
+                        "valueFrom": "${secrets_arn}:llm-api-key::"
                     }
-
                 ]
             }
         ]
@@ -85,7 +64,7 @@
         "type": "integer",
         "title": "CPU",
         "description": "The amount of CPU to provide to the ECS task. Valid amounts are specified in the AWS documentation. If not provided, a default value of 1024 will be used unless present on the task definition.",
-        "default": 512
+        "default": ${pool_cpu}
       },
       "env": {
         "type": "object",
@@ -124,7 +103,7 @@
         "type": "integer",
         "title": "Memory",
         "description": "The amount of memory to provide to the ECS task. Valid amounts are specified in the AWS documentation. If not provided, a default value of 2048 will be used unless present on the task definition.",
-        "default": ${slow_pool_memory}
+        "default": ${pool_memory}
       },
       "vpc_id": {
         "type": "string",

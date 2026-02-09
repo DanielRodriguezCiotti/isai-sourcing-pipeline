@@ -10,16 +10,21 @@ variable "workspace_id" {
 }
 
 # Work pool names
-variable "fast_pool_name" {
-  description = "Name for the fast (process) work pool"
+variable "pool_name" {
+  description = "Name for the work pool"
   type        = string
 }
 
-variable "slow_pool_name" {
-  description = "Name for the slow (ecs:push) work pool"
-  type        = string
+variable "pool_cpu" {
+  description = "CPU to allocate to work pool"
+  type = string
 }
 
+variable "pool_memory" {
+  description = "Memory (MiB) to allocate to the pool ECS tasks"
+  type        = number
+  default     = 2048
+}
 
 variable "image" {
   description = "Docker image for ECS tasks"
@@ -98,8 +103,4 @@ variable "secrets_arn" {
   type        = string
   default     = ""
 }
-variable "slow_pool_memory" {
-  description = "Memory (MiB) to allocate to the slow pool ECS tasks"
-  type        = number
-  default     = 2048
-}
+
