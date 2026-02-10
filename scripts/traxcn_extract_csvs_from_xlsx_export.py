@@ -35,9 +35,9 @@ def load_and_clean_excel(file_path, output_dir="data/traxcn_parsed"):
 
     cleaned_sheets = {}
     sheet_prefixes = {
-        'Companies': 'companies',
-        'Funding': 'funding',
-        'People': 'people'
+        "Companies": "companies",
+        "Funding": "funding",
+        "People": "people",
     }
 
     for sheet_name, df in all_sheets.items():
@@ -58,13 +58,17 @@ def load_and_clean_excel(file_path, output_dir="data/traxcn_parsed"):
         # --- CLEANING STEPS ---
 
         # 1. Drop rows that are completely empty
-        df = df.dropna(how='all', axis=0)
+        df = df.dropna(how="all", axis=0)
 
         # 2. Drop columns that are completely empty
-        df = df.dropna(how='all', axis=1)
+        df = df.dropna(how="all", axis=1)
 
         # 3. Replace newlines within cells with a delimiter
-        df = df.map(lambda x: x.replace('\n', ' ').replace('\r', '') if isinstance(x, str) else x)
+        df = df.map(
+            lambda x: (
+                x.replace("\n", " ").replace("\r", "") if isinstance(x, str) else x
+            )
+        )
 
         # Save to CSV
         output_path = os.path.join(output_dir, f"{matching_prefix}.csv")
@@ -76,10 +80,11 @@ def load_and_clean_excel(file_path, output_dir="data/traxcn_parsed"):
 
     return cleaned_sheets
 
+
 # --- USAGE EXAMPLE ---
 if __name__ == "__main__":
     # Replace with your actual file path
-    input_file = "data/traxcn/TracxnExport-Product Design and Devpmt -Feb-05-2026.xlsx"
+    input_file = "/Users/danielrodriguez/Downloads/CVC_ALL_SCOPE_TRACXNDB_DEDUP.xlsx"
 
     try:
         # Process the Excel file and save CSVs

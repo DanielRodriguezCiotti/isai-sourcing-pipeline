@@ -16,7 +16,7 @@ from supabase import Client, create_client
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-BATCH_SIZE = 10
+BATCH_SIZE = 1000
 
 
 def get_supabase_client() -> Client:
@@ -37,6 +37,16 @@ def comma2list(value: Any) -> Optional[list[str]]:
         items = [item.strip() for item in value.split(",") if item.strip()]
         return items if items else None
     return None
+
+
+def parse_amount(value):
+    if pd.isna(value) or value == "" or value is None:
+        return None
+    try:
+        value_str = str(value).split(".")[0].replace(",", "")
+        return int(value_str)
+    except (ValueError, AttributeError):
+        return None
 
 
 def parsedate(value: Any) -> Optional[str]:
@@ -121,8 +131,22 @@ def parse_people_csv(input_path: Path) -> pd.DataFrame:
     df = pd.read_csv(input_path)
     df.columns = parse_column_names(df.columns.tolist(), "people")
 
-    if "sno." in df.columns:
-        df = df.drop(columns=["sno."])
+    cols_to_keep = [
+        "founder_name",
+        "title",
+        "company_name",
+        "domain_name",
+        "people_location",
+        "profile_links",
+        "emails",
+        "description",
+        "photo_url",
+    ]
+    cols_to_keep = [col for col in cols_to_keep if col in df.columns]
+    df = df[cols_to_keep]
+    df = df.dropna(subset=["founder_name", "title", "domain_name"])
+    df = df.dropna(subset=["company_name"])
+    df = df.drop_duplicates(subset=["founder_name", "title", "domain_name"])
 
     if "emails" in df.columns:
         df["emails"] = df["emails"].apply(
@@ -139,8 +163,66 @@ def parse_companies_csv(input_path: Path) -> pd.DataFrame:
     df = pd.read_csv(input_path)
     df.columns = parse_column_names(df.columns.tolist(), "companies")
 
-    cols_to_drop = ["sno.", "soonicorn_club_status", "soonicorn_club_event_date"]
-    df = df.drop(columns=[col for col in cols_to_drop if col in df.columns])
+    cols_to_keep = [
+        "company_name",
+        "domain_name",
+        "overview",
+        "founded_year",
+        "country",
+        "state",
+        "city",
+        "description",
+        "sector",
+        "business_models",
+        "team_background",
+        "waves",
+        "trending_themes",
+        "special_flags",
+        "company_stage",
+        "all_associated_legal_entities",
+        "is_funded",
+        "total_funding_in_usd",
+        "latest_funded_amount_in_usd",
+        "latest_funded_date",
+        "latest_valuation_in_usd",
+        "institutional_investors",
+        "angel_investors",
+        "annual_revenue_in_usd",
+        "annual_net_profit_in_usd",
+        "annual_ebitda_in_usd",
+        "key_people_info",
+        "key_people_email_ids",
+        "links_to_key_people_profiles",
+        "total_employee_count",
+        "acquisition_list",
+        "is_acquired",
+        "is_ipo",
+        "editors_rating",
+        "editors_rated_date",
+        "tracxn_score",
+        "company_emails",
+        "company_phone_numbers",
+        "website",
+        "website_status",
+        "website_status_last_updated",
+        "linkedin",
+        "twitter",
+        "facebook",
+        "blog_url",
+        "tracxn_url",
+        "date_added",
+        "is_deadpooled",
+        "part_of",
+    ]
+    cols_to_keep = [col for col in cols_to_keep if col in df.columns]
+    df = df[cols_to_keep]
+
+    # drop duplicates on (domain_name)
+    df = df.dropna(subset=["domain_name"])
+    df = df.drop_duplicates(subset=["domain_name"])
+
+    # drop null in name
+    df = df.dropna(subset=["company_name"])
 
     if "founded_year" in df.columns:
         df["founded_year"] = pd.to_numeric(df["founded_year"], errors="coerce").astype(
@@ -197,24 +279,52 @@ def parse_funding_csv(input_path: Path) -> pd.DataFrame:
     df = pd.read_csv(input_path)
     df.columns = parse_column_names(df.columns.tolist(), "funding")
 
-    if "sno." in df.columns:
-        df = df.drop(columns=["sno."])
+    cols_to_keep = [
+        "round_date",
+        "company_name",
+        "domain_name",
+        "round_name",
+        "round_amount_in_usd",
+        "round_pre_money_valuation_in_usd",
+        "round_post_money_valuation_in_usd",
+        "round_trailing_12m_revenue_in_usd",
+        "institutional_investors",
+        "angel_investors",
+        "lead_investor",
+        "facilitators",
+        "total_funding_in_usd",
+        "round_revenue_multiple",
+        "overview",
+        "founded_year",
+        "country",
+        "state",
+        "city",
+        "practice_areas",
+        "feed_name",
+        "business_models",
+    ]
+    cols_to_keep = [col for col in cols_to_keep if col in df.columns]
+    df = df[cols_to_keep]
+
+    # drop duplicates on (round_date, domain_name, round_name)
+    df = df.drop_duplicates(subset=["round_date", "domain_name", "round_name"])
+
+    # drop null in name
+    df = df.dropna(subset=["company_name"])
 
     if "round_date" in df.columns:
         df["round_date"] = df["round_date"].apply(parsedate)
 
-    if "round_amount_in_usd" in df.columns:
-
-        def parse_amount(value):
-            if pd.isna(value) or value == "" or value is None:
-                return None
-            try:
-                value_str = str(value).split(".")[0].replace(",", "")
-                return int(value_str)
-            except (ValueError, AttributeError):
-                return None
-
-        df["round_amount_in_usd"] = df["round_amount_in_usd"].apply(parse_amount)
+    for col in [
+        "round_amount_in_usd",
+        "round_pre_money_valuation_in_usd",
+        "round_post_money_valuation_in_usd",
+        "round_trailing_12m_revenue_in_usd",
+        "total_funding_in_usd",
+        "round_revenue_multiple",
+    ]:
+        if col in df.columns:
+            df[col] = df[col].apply(parse_amount)
 
     if "founded_year" in df.columns:
         df["founded_year"] = pd.to_numeric(df["founded_year"], errors="coerce").astype(
@@ -332,7 +442,12 @@ def main():
             )
         funding_df = funding_df_after_duplicates
         print(f"  Rows: {len(funding_df)}, Columns: {len(funding_df.columns)}")
-        push_to_supabase(client, "traxcn_funding_rounds", funding_df)
+        push_to_supabase(
+            client,
+            "traxcn_funding_rounds",
+            funding_df,
+            upsert_on_conflict="round_date,domain_name,round_name",
+        )
     else:
         print(f"  {funding_input.name} not found, skipping")
 
@@ -351,7 +466,12 @@ def main():
             )
         people_df = people_df_after_duplicates
         print(f"  Rows: {len(people_df)}, Columns: {len(people_df.columns)}")
-        push_to_supabase(client, "traxcn_founders", people_df)
+        push_to_supabase(
+            client,
+            "traxcn_founders",
+            people_df,
+            upsert_on_conflict="founder_name,title,domain_name",
+        )
     else:
         print(f"  {people_input.name} not found, skipping")
 
