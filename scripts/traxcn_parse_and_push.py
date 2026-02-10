@@ -322,6 +322,15 @@ def main():
     if funding_input.exists():
         print(f"\nParsing {funding_input.name}...")
         funding_df = parse_funding_csv(funding_input)
+        # drop duplicates on (round_date, domain_name, round_name)
+        funding_df_after_duplicates = funding_df.drop_duplicates(
+            subset=["round_date", "domain_name", "round_name"]
+        )
+        if len(funding_df_after_duplicates) != len(funding_df):
+            print(
+                f"  Dropped {len(funding_df) - len(funding_df_after_duplicates)} duplicates"
+            )
+        funding_df = funding_df_after_duplicates
         print(f"  Rows: {len(funding_df)}, Columns: {len(funding_df.columns)}")
         push_to_supabase(client, "traxcn_funding_rounds", funding_df)
     else:
@@ -332,6 +341,15 @@ def main():
     if people_input.exists():
         print(f"\nParsing {people_input.name}...")
         people_df = parse_people_csv(people_input)
+        # drop duplicates on (founder_name, title, domain_name)
+        people_df_after_duplicates = people_df.drop_duplicates(
+            subset=["founder_name", "title", "domain_name"]
+        )
+        if len(people_df_after_duplicates) != len(people_df):
+            print(
+                f"  Dropped {len(people_df) - len(people_df_after_duplicates)} duplicates"
+            )
+        people_df = people_df_after_duplicates
         print(f"  Rows: {len(people_df)}, Columns: {len(people_df.columns)}")
         push_to_supabase(client, "traxcn_founders", people_df)
     else:

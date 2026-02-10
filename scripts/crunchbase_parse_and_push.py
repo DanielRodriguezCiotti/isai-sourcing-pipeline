@@ -326,6 +326,15 @@ def main():
                 print(
                     f"  Filtered out {skipped} funding rounds linked to excluded companies"
                 )
+            # drop duplicates on (announced_on, crunchbase_company_uuid, investment_type)
+            funding_df_after_duplicates = funding_df.drop_duplicates(
+                subset=["announced_on", "crunchbase_company_uuid", "investment_type"]
+            )
+            if len(funding_df_after_duplicates) != len(funding_df):
+                print(
+                    f"  Dropped {len(funding_df) - len(funding_df_after_duplicates)} duplicates"
+                )
+            funding_df = funding_df_after_duplicates
         print(f"  Rows: {len(funding_df)}, Columns: {len(funding_df.columns)}")
         push_to_supabase(client, "crunchbase_funding_rounds", funding_df)
     else:
@@ -344,6 +353,16 @@ def main():
             skipped = before - len(people_df)
             if skipped:
                 print(f"  Filtered out {skipped} founders linked to excluded companies")
+
+            # drop duplicates on (crunchbase_company_uuid, name, job_title)
+            people_df_after_duplicates = people_df.drop_duplicates(
+                subset=["crunchbase_company_uuid", "name", "job_title"]
+            )
+            if len(people_df_after_duplicates) != len(people_df):
+                print(
+                    f"  Dropped {len(people_df) - len(people_df_after_duplicates)} duplicates"
+                )
+            people_df = people_df_after_duplicates
         print(f"  Rows: {len(people_df)}, Columns: {len(people_df.columns)}")
         push_to_supabase(client, "crunchbase_founders", people_df)
     else:
