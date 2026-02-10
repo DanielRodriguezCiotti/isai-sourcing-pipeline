@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     supabase_url: str = Field(alias="SUPABASE_URL")
     supabase_service_role_key: SecretStr = Field(alias="SUPABASE_SERVICE_ROLE_KEY")
     google_api_key: SecretStr = Field(alias="GOOGLE_API_KEY")
+    traxcn_exports_bucket_name: str = Field(
+        alias="TRAXCN_EXPORTS_BUCKET_NAME", default="traxcn_exports"
+    )
 
 
 @lru_cache(maxsize=1)

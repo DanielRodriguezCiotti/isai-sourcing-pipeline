@@ -13,3 +13,7 @@ terraform/terraform-var.env
 .env
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
+data/
+CLAUDE.md
+.mcp.json
+.DS_Store
