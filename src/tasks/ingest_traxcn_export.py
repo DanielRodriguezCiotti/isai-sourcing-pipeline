@@ -167,7 +167,7 @@ def parse_column_names(columns: list[str], csv_type: str) -> list[str]:
     return parsed_columns
 
 
-def parse_people(df: pd.DataFrame, domains: list[str]) -> pd.DataFrame:
+def parse_people(df: pd.DataFrame) -> pd.DataFrame:
     """Parse people dataframe according to specified rules."""
 
     df.columns = parse_column_names(df.columns.tolist(), "people")
@@ -195,11 +195,10 @@ def parse_people(df: pd.DataFrame, domains: list[str]) -> pd.DataFrame:
             )
         )
 
-    df = df[df["domain_name"].isin(domains)]
     return df
 
 
-def parse_companies(df: pd.DataFrame, domains: list[str]) -> pd.DataFrame:
+def parse_companies(df: pd.DataFrame) -> pd.DataFrame:
     """Parse companies dataframe according to specified rules."""
     df.columns = parse_column_names(df.columns.tolist(), "companies")
 
@@ -311,12 +310,10 @@ def parse_companies(df: pd.DataFrame, domains: list[str]) -> pd.DataFrame:
         if col in df.columns:
             df[col] = df[col].apply(parsedate)
 
-    df = df[df["domain_name"].isin(domains)]
-
     return df
 
 
-def parse_funding(df: pd.DataFrame, domains: list[str]) -> pd.DataFrame:
+def parse_funding(df: pd.DataFrame) -> pd.DataFrame:
     """Parse funding dataframe according to specified rules."""
     df.columns = parse_column_names(df.columns.tolist(), "funding")
 
@@ -385,9 +382,6 @@ def parse_funding(df: pd.DataFrame, domains: list[str]) -> pd.DataFrame:
     for col in comma_list_cols:
         if col in df.columns:
             df[col] = df[col].apply(comma2list)
-
-    df = df[df["domain_name"].isin(domains)]
-
     return df
 
 
@@ -406,13 +400,21 @@ def clean_row(row: dict) -> dict:
     return cleaned
 
 
-def push_to_supabase(
+def get_existing_domains() -> pd.DataFrame:
+    """Filter out domains that already exist in the database."""
+    client = get_supabase_client()
+    existing_domains = client.table("traxcn_companies").select("domain_name").execute()
+    existing_domains = [domain["domain_name"] for domain in existing_domains]
+    return existing_domains
+
+
+def upsert_in_batches(
     table_name: str,
     df: pd.DataFrame,
+    upsert_on_conflict: str,
     batch_size: int = 1000,
-    upsert_on_conflict: Optional[str] = None,
 ) -> None:
-    """Push DataFrame records to a Supabase table in batches."""
+    """Upsert DataFrame records into a Supabase table in batches."""
     logger = get_run_logger()
     client = get_supabase_client()
     records = [clean_row(row) for row in df.to_dict(orient="records")]
@@ -427,12 +429,7 @@ def push_to_supabase(
         batch = records[i : i + batch_size]
         batch_num = i // batch_size + 1
 
-        if upsert_on_conflict:
-            client.table(table_name).upsert(
-                batch, on_conflict=upsert_on_conflict
-            ).execute()
-        else:
-            client.table(table_name).insert(batch).execute()
+        client.table(table_name).upsert(batch, on_conflict=upsert_on_conflict).execute()
 
         logger.info(f"    Batch {batch_num}/{total_batches} ({len(batch)} records)")
 
@@ -440,21 +437,23 @@ def push_to_supabase(
 
 
 @task(name="ingest_traxcn_export")
-def ingest_traxcn_export(supabase_file_path: str, domains: list[str]) -> None:
+def ingest_traxcn_export(supabase_file_path: str) -> None:
     """Parse all TraxCN CSV files and push to Supabase."""
     logger = get_run_logger()
     file = load_traxcn_export(supabase_file_path)
     filtered_sheets = load_and_clean_excel(file)
-    companies_df = parse_companies(filtered_sheets["companies"], domains)
-    push_to_supabase("traxcn_companies", companies_df, upsert_on_conflict="domain_name")
-    funding_df = parse_funding(filtered_sheets["funding"], domains)
-    push_to_supabase(
+    companies_df = parse_companies(filtered_sheets["companies"])
+    upsert_in_batches(
+        "traxcn_companies", companies_df, upsert_on_conflict="domain_name"
+    )
+    funding_df = parse_funding(filtered_sheets["funding"])
+    upsert_in_batches(
         "traxcn_funding_rounds",
         funding_df,
         upsert_on_conflict="round_date,domain_name,round_name",
     )
-    people_df = parse_people(filtered_sheets["people"], domains)
-    push_to_supabase(
+    people_df = parse_people(filtered_sheets["people"])
+    upsert_in_batches(
         "traxcn_founders",
         people_df,
         upsert_on_conflict="founder_name,title,domain_name",
