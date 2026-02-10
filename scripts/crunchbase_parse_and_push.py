@@ -196,6 +196,7 @@ def parse_people_csv(input_path: Path) -> pd.DataFrame:
         "facebook_url",
         "linkedin_url",
         "twitter_url",
+        "description",
     ]
     df = df[[col for col in keep if col in df.columns]]
 
@@ -281,11 +282,14 @@ def main():
         # Log duplicate-domain summary
         if excluded_ids:
             # Re-read just to get the duplicate domain values for logging
-            raw_df = pd.read_csv(orgs_input, low_memory=False, usecols=["uuid", "domain"])
+            raw_df = pd.read_csv(
+                orgs_input, low_memory=False, usecols=["uuid", "domain"]
+            )
             raw_df = raw_df.rename(columns={"uuid": "crunchbase_id"})
             dup_domains = sorted(
                 raw_df.loc[
-                    raw_df["crunchbase_id"].isin(excluded_ids) & raw_df["domain"].notna(),
+                    raw_df["crunchbase_id"].isin(excluded_ids)
+                    & raw_df["domain"].notna(),
                     "domain",
                 ].unique()
             )
@@ -319,7 +323,9 @@ def main():
             ]
             skipped = before - len(funding_df)
             if skipped:
-                print(f"  Filtered out {skipped} funding rounds linked to excluded companies")
+                print(
+                    f"  Filtered out {skipped} funding rounds linked to excluded companies"
+                )
         print(f"  Rows: {len(funding_df)}, Columns: {len(funding_df.columns)}")
         push_to_supabase(client, "crunchbase_funding_rounds", funding_df)
     else:
