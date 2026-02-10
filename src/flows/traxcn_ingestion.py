@@ -37,3 +37,11 @@ async def traxcn_ingestion_flow(supabase_file_path: str):
             raise ValueError("Invalid mode.")
     else:
         raise ValueError("Ingestion cancelled.")
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(
+        traxcn_ingestion_flow(supabase_file_path="TracxnExport-Feb-05-2026.xlsx")
+    )

@@ -1,3 +1,4 @@
+import io
 import math
 import re
 from datetime import datetime
@@ -9,8 +10,6 @@ from prefect.logging import get_run_logger
 
 from src.config.clients import get_supabase_client
 from src.config.settings import get_settings
-
-logger = get_run_logger()
 
 
 def load_traxcn_export(supabase_file_path: str) -> bytes:
@@ -34,8 +33,8 @@ def load_and_clean_excel(file: bytes):
     Returns:
         dict: Keys are output names (companies, funding, people), values are dataframes.
     """
-
-    all_sheets = pd.read_excel(file, sheet_name=None, header=5)
+    logger = get_run_logger()
+    all_sheets = pd.read_excel(io.BytesIO(file), sheet_name=None, header=5)
     sheet_prefixes = {
         "Companies": "companies",
         "Funding": "funding",
@@ -414,6 +413,7 @@ def push_to_supabase(
     upsert_on_conflict: Optional[str] = None,
 ) -> None:
     """Push DataFrame records to a Supabase table in batches."""
+    logger = get_run_logger()
     client = get_supabase_client()
     records = [clean_row(row) for row in df.to_dict(orient="records")]
     total = len(records)
@@ -442,6 +442,7 @@ def push_to_supabase(
 @task(name="ingest_traxcn_export")
 def ingest_traxcn_export(supabase_file_path: str, domains: list[str]) -> None:
     """Parse all TraxCN CSV files and push to Supabase."""
+    logger = get_run_logger()
     file = load_traxcn_export(supabase_file_path)
     filtered_sheets = load_and_clean_excel(file)
     companies_df = parse_companies(filtered_sheets["companies"], domains)
@@ -452,7 +453,7 @@ def ingest_traxcn_export(supabase_file_path: str, domains: list[str]) -> None:
         funding_df,
         upsert_on_conflict="round_date,domain_name,round_name",
     )
-    people_df = parse_people(filtered_sheets["people"])
+    people_df = parse_people(filtered_sheets["people"], domains)
     push_to_supabase(
         "traxcn_founders",
         people_df,

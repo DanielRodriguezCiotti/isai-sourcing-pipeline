@@ -1,11 +1,11 @@
+import io
+
 import pandas as pd
 from prefect import task
 from prefect.logging import get_run_logger
 
 from src.config.clients import get_supabase_client
 from src.config.settings import get_settings
-
-logger = get_run_logger()
 
 
 def load_traxcn_export(supabase_file_path: str) -> bytes:
@@ -22,9 +22,9 @@ def extract_domains_from_companies_sheet(file: bytes) -> list[str]:
     """
     Extracts domains from the Companies sheet of an Excel file.
     """
-    all_sheets = pd.read_excel(file, sheet_name=None, header=5)
+    all_sheets = pd.read_excel(io.BytesIO(file), sheet_name=None, header=5)
     prefix = "Companies"
-
+    logger = get_run_logger()
     for sheet_name, df in all_sheets.items():
         # Check if sheet starts with any of the target prefixes
         if sheet_name.startswith(prefix):
@@ -39,9 +39,14 @@ def determine_db_modifications(domains: list[str]) -> dict[str, int | list[str]]
     Determines the modifications to be made to the database.
     """
     client = get_supabase_client()
-    existing_domains = set(
-        client.table("traxcn_companies").select("domain_name").in_("domains").execute()
+    existing_domains = (
+        client.table("traxcn_companies")
+        .select("domain_name")
+        .in_("domain_name", domains)
+        .execute()
+        .data
     )
+    existing_domains = set([domain["domain_name"] for domain in existing_domains])
     nb_existing_domains = len(existing_domains)
     new_domains = set(domains) - existing_domains
     nb_new_domains = len(new_domains)
