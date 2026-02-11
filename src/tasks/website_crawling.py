@@ -36,6 +36,8 @@ Example of answer:
 should_retrieve_more_pages: False
 concise_reason: "The homepage contains enough information to answer the previous questions"
 pages_to_retrieve: []
+
+Focus on pages about the solution, the use cases, the clients, the succes stories.
 """
 
 
