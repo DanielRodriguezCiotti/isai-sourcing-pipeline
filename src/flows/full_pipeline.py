@@ -14,7 +14,3 @@ def full_pipeline_flow(supabase_file_path: str):
     companies_reconciliation(domains)
     founders_reconciliation(domains)
     funding_rounds_reconciliation(domains)
-
-
-if __name__ == "__main__":
-    full_pipeline_flow(supabase_file_path="traxcn_export_sample.xlsx")
