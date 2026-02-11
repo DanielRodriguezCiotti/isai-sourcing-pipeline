@@ -439,7 +439,6 @@ def upsert_in_batches(
 @task(name="ingest_traxcn_export")
 def ingest_traxcn_export(supabase_file_path: str) -> None:
     """Parse all TraxCN CSV files and push to Supabase."""
-    logger = get_run_logger()
     file = load_traxcn_export(supabase_file_path)
     filtered_sheets = load_and_clean_excel(file)
     companies_df = parse_companies(filtered_sheets["companies"])
@@ -458,4 +457,5 @@ def ingest_traxcn_export(supabase_file_path: str) -> None:
         people_df,
         upsert_on_conflict="founder_name,title,domain_name",
     )
-    logger.info("\nAll done!")
+    # Return the company domains
+    return companies_df["domain_name"].tolist()

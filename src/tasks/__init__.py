@@ -1,4 +1,3 @@
-from .asses_traxcn_export import assess_db_modifications_from_traxcn_export
 from .companies_reconciliation import companies_reconciliation
 from .founders_reconciliation import founders_reconciliation
 from .funding_rounds_reconciliation import funding_rounds_reconciliation
@@ -9,5 +8,4 @@ __all__ = [
     "founders_reconciliation",
     "funding_rounds_reconciliation",
     "ingest_traxcn_export",
-    "assess_db_modifications_from_traxcn_export",
 ]
