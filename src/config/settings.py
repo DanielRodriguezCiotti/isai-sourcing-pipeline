@@ -20,12 +20,14 @@ class Settings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     # Iterate over the list of aliases and if they are not in the environment, try to pull them from prefect secrets, else raise an error
+    loaded_secrets = {}
     for field in Settings.model_fields.values():
-        if os.environ.get(field.alias) is None and field.default is None:
+        # If the field has no default and is not in the env vars, load from prefect secrets
+        if not isinstance(field.default, str) and os.environ.get(field.alias) is None:
             secret_name = field.alias.lower().replace("_", "-")
-            prefect_secret = PrefectSecret(secret_name).load(secret_name)
+            prefect_secret = PrefectSecret.load(secret_name)
             secret_str = prefect_secret.get()
             if secret_str is None:
                 raise ValueError(f"Secret {field.alias} is not set")
-            os.environ[field.alias] = secret_str
-    return Settings()
+            loaded_secrets[field.alias] = secret_str
+    return Settings(**loaded_secrets)
