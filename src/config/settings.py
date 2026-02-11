@@ -22,7 +22,9 @@ def get_settings() -> Settings:
     # Iterate over the list of aliases and if they are not in the environment, try to pull them from prefect secrets, else raise an error
     for field in Settings.model_fields.values():
         if os.environ.get(field.alias) is None and field.default is None:
-            prefect_secret = PrefectSecret(field.alias).load(field.alias)
+            prefect_secret = PrefectSecret(field.alias).load(
+                field.alias.lower().replace("_", "-")
+            )
             secret_str = prefect_secret.get()
             if secret_str is None:
                 raise ValueError(f"Secret {field.alias} is not set")
