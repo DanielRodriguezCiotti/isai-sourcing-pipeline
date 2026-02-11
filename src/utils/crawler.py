@@ -2,10 +2,22 @@ import asyncio
 from dataclasses import dataclass, field
 from typing import Dict, List
 
-from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
 from tenacity import AsyncRetrying, stop_after_attempt, wait_exponential
 
 from src.utils.logger import get_logger
+
+BROWSER_CONFIG = BrowserConfig(
+    headless=True,
+    text_mode=True,
+    extra_args=["--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage"],
+)
+
+DEFAULT_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/119.0.0.0 Safari/537.36"
+)
 
 
 @dataclass
@@ -16,7 +28,7 @@ class CrawlOutput:
 
 class Crawler:
     def __init__(
-        self, rate_limit: int = 5, max_retries: int = 3, page_timeout: int = 30000
+        self, rate_limit: int = 5, max_retries: int = 3, page_timeout: int = 60000
     ):
         self.rate_limit = rate_limit
         self.max_retries = max_retries
@@ -30,7 +42,7 @@ class Crawler:
         semaphore = asyncio.Semaphore(self.rate_limit)
         result = CrawlOutput()
 
-        async with AsyncWebCrawler() as crawler:
+        async with AsyncWebCrawler(config=BROWSER_CONFIG) as crawler:
             tasks = [
                 self._crawl_single(crawler, url, semaphore, result) for url in urls
             ]
@@ -65,7 +77,11 @@ class Crawler:
             reraise=True,
         ):
             with attempt:
-                config = CrawlerRunConfig(page_timeout=self.page_timeout)
+                config = CrawlerRunConfig(
+                    page_timeout=self.page_timeout,
+                    wait_until="networkidle",
+                    user_agent=DEFAULT_USER_AGENT,
+                )
                 response = await crawler.arun(url=url, config=config)
                 if not response.success:
                     raise RuntimeError(f"Crawl failed: {response.error_message}")
