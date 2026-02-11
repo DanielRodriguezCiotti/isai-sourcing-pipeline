@@ -2,6 +2,8 @@ import threading
 
 from supabase import Client, create_client
 
+from src.utils.qa_model import QAModel
+
 from .settings import get_settings
 
 _SUPABASE_CLIENT = None
@@ -18,3 +20,18 @@ def get_supabase_client() -> Client:
                 settings.supabase_service_role_key.get_secret_value(),
             )
     return _SUPABASE_CLIENT
+
+
+_QA_MODEL = None
+_qa_model_lock = threading.Lock()
+
+
+def get_qa_model(max_workers: int = 10) -> QAModel:
+    global _QA_MODEL
+    if _QA_MODEL is None:
+        with _qa_model_lock:
+            _QA_MODEL = QAModel(
+                api_key=get_settings().google_api_key.get_secret_value(),
+                max_workers=max_workers,
+            )
+    return _QA_MODEL

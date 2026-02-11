@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     traxcn_exports_bucket_name: str = Field(
         alias="TRAXCN_EXPORTS_BUCKET_NAME", default="traxcn_exports"
     )
+    websites_bucket_name: str = Field(alias="WEBSITES_BUCKET_NAME", default="websites")
 
 
 @lru_cache(maxsize=1)
