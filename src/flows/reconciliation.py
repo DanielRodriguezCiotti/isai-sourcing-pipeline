@@ -5,66 +5,17 @@ from src.tasks import (
     founders_reconciliation,
     funding_rounds_reconciliation,
 )
+from src.utils.logger import get_logger
 
 
 @flow(name="reconciliation-flow")
 def reconciliation_flow(domains: list[str]):
-    companies_reconciliation(domains)
-    founders_reconciliation(domains)
-    funding_rounds_reconciliation(domains)
-
-
-domains = [
-    "zwsoft.com",
-    "propelsoftware.com",
-    "proteantecs.com",
-    "etherealmachines.com",
-    "colabsoftware.com",
-    "monolithai.com",
-    "caddi.com",
-    "physicsx.ai",
-    "dspace.com",
-    "apriori.com",
-    "simscale.com",
-    "luminarycloud.com",
-    "allspice.io",
-    "synera.io",
-    "oneclicklca.com",
-    "aras.com",
-    "techsoft3d.com",
-    "highbyte.com",
-    "quilter.ai",
-    "vayavyalabs.com",
-    "cevotec.com",
-    "bluespec.com",
-    "inventables.com",
-    "flux.ai",
-    "minviro.com",
-    "ntop.com",
-    "conceptsnrec.com",
-    "foundationegi.com",
-    "zoo.dev",
-    "averna.com",
-    "efabless.com",
-    "circuitmind.io",
-    "gtisoft.com",
-    "durolabs.co",
-    "riiico.com",
-    "pcbstator.com",
-    "simyog.com",
-    "toffeex.com",
-    "adtechnology.com",
-    "hysopt.com",
-    "beyondmath.com",
-    "nullspaceinc.com",
-    "aletiq.com",
-    "toolpath.com",
-    "hirebotics.com",
-    "delogue.com",
-    "madesmarter.uk",
-    "getleo.ai",
-    "demxs.com",
-    "comsol.com",
-    "thalia-da.com",
-]
-reconciliation_flow(domains)
+    logger = get_logger()
+    logger.info(f"Starting reconciliation for {len(domains)} domains")
+    batch_size = 500
+    for i in range(0, len(domains), batch_size):
+        batch = domains[i : i + batch_size]
+        companies_reconciliation(batch)
+        founders_reconciliation(batch)
+        funding_rounds_reconciliation(batch)
+    logger.info("Reconciliation completed")

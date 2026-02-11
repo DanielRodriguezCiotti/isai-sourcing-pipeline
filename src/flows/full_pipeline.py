@@ -11,6 +11,9 @@ from src.tasks import (
 @flow(name="reconciliation-flow")
 def full_pipeline_flow(supabase_file_path: str):
     domains = ingest_traxcn_export(supabase_file_path)
-    companies_reconciliation(domains)
-    founders_reconciliation(domains)
-    funding_rounds_reconciliation(domains)
+    batch_size = 500
+    for i in range(0, len(domains), batch_size):
+        batch = domains[i : i + batch_size]
+        companies_reconciliation(batch)
+        founders_reconciliation(batch)
+        funding_rounds_reconciliation(batch)
