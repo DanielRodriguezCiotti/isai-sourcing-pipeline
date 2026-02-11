@@ -105,7 +105,7 @@ def push_first_iteration_to_supabase(domains_dict: dict[str, str], error: bool):
 @task(name="website_crawling")
 def website_crawling(domains: list[str]):
     logger = get_logger()
-    crawler = Crawler(max_retries=1, page_timeout=15000)
+    crawler = Crawler(rate_limit=10, max_retries=1, page_timeout=15000)
     qa_model = get_qa_model(max_workers=20)
     qa_model.log_cost(logger)
     logger.info(f"Starting website enrichment for {len(domains)} domains")
