@@ -11,10 +11,10 @@ from pathlib import Path
 
 import pandas as pd
 from prefect import task
-from prefect.logging import get_run_logger
 
 from src.config.clients import get_supabase_client
 from src.utils.db import fetch_as_dataframe, sanitize, upsert_in_batches
+from src.utils.logger import get_logger
 
 COUNTRY_CODES_PATH = (
     Path(__file__).resolve().parent.parent.parent / "assets" / "country_codes.json"
@@ -186,7 +186,7 @@ def reconciliation_all_tags(row) -> list[str]:
 
 @task(name="companies_reconciliation")
 def companies_reconciliation(domains: list[str]):
-    logger = get_run_logger()
+    logger = get_logger()
     client = get_supabase_client()
     country_codes = _load_country_codes()
 

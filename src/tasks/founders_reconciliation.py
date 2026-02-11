@@ -9,10 +9,10 @@ use crunchbase_founders. Otherwise use traxcn_founders.
 """
 
 from prefect import task
-from prefect.logging import get_run_logger
 
 from src.config.clients import get_supabase_client
 from src.utils.db import delete_in_batches, fetch_in_batches, insert_in_batches
+from src.utils.logger import get_logger
 
 # ---------------------------------------------------------------------------
 # Main task
@@ -21,7 +21,7 @@ from src.utils.db import delete_in_batches, fetch_in_batches, insert_in_batches
 
 @task(name="founders_reconciliation")
 def founders_reconciliation(domains: list[str]):
-    logger = get_run_logger()
+    logger = get_logger()
     client = get_supabase_client()
 
     logger.info(f"Starting founders reconciliation for {len(domains)} domains")

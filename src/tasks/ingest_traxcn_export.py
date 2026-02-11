@@ -6,10 +6,10 @@ from typing import Any, Optional
 
 import pandas as pd
 from prefect import task
-from prefect.logging import get_run_logger
 
 from src.config.clients import get_supabase_client
 from src.config.settings import get_settings
+from src.utils.logger import get_logger
 
 
 def load_traxcn_export(supabase_file_path: str) -> bytes:
@@ -33,7 +33,7 @@ def load_and_clean_excel(file: bytes):
     Returns:
         dict: Keys are output names (companies, funding, people), values are dataframes.
     """
-    logger = get_run_logger()
+    logger = get_logger()
     all_sheets = pd.read_excel(io.BytesIO(file), sheet_name=None, header=5)
     sheet_prefixes = {
         "Companies": "companies",
@@ -415,7 +415,7 @@ def upsert_in_batches(
     batch_size: int = 1000,
 ) -> None:
     """Upsert DataFrame records into a Supabase table in batches."""
-    logger = get_run_logger()
+    logger = get_logger()
     client = get_supabase_client()
     records = [clean_row(row) for row in df.to_dict(orient="records")]
     total = len(records)
