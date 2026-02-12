@@ -114,10 +114,12 @@ def update_database_with_website_ai_parsing_results(
                 "key_clients": answer.key_clients,
                 "key_partners": answer.key_partners,
                 "nb_of_clients_identified": answer.nb_of_clients_identified,
+                "success": True,
             }
         else:
             record = {
                 "id": company_id,
+                "domain": domain,
                 "success": False,
             }
         records.append(record)

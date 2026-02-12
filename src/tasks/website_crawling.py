@@ -93,8 +93,9 @@ def push_first_iteration_to_supabase(domains_dict: dict[str, str], error: bool):
             "domain": domain,
             "storage_path": path,
             "sourcing_date": datetime.now().strftime("%Y-%m-%d"),
-            "success": not error,
         }
+        if error:
+            record["success"] = False
         domain_to_record_id_path_map[domain] = {"id": unique_id, "path": path}
         records.append(record)
     client.table("web_scraping_enrichment").insert(records).execute()
@@ -105,7 +106,7 @@ def push_first_iteration_to_supabase(domains_dict: dict[str, str], error: bool):
 @task(name="website_crawling")
 def website_crawling(domains: list[str]):
     logger = get_logger()
-    crawler = Crawler(rate_limit=10, max_retries=1, page_timeout=15000)
+    crawler = Crawler(rate_limit=5, max_retries=1, page_timeout=30000)
     qa_model = get_qa_model(max_workers=20)
     qa_model.log_cost(logger)
     logger.info(f"Starting website enrichment for {len(domains)} domains")
