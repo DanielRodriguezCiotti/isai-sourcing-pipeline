@@ -51,7 +51,7 @@ def upsert_in_batches(
     """Upsert records into a Supabase table in batches."""
     total_batches = math.ceil(len(records) / BATCH_SIZE) if records else 0
     for i in range(0, len(records), BATCH_SIZE):
-        batch = records[i : i + BATCH_SIZE]
+        batch = [_strip_null_bytes(r) for r in records[i : i + BATCH_SIZE]]
         client.table(table).upsert(batch, on_conflict=on_conflict).execute()
         logger.info(f"Upserted batch {i // BATCH_SIZE + 1}/{total_batches}")
 
@@ -60,4 +60,15 @@ def sanitize(val):
     """Replace any non-JSON-compliant float (nan/inf) with None."""
     if isinstance(val, float) and (math.isnan(val) or math.isinf(val)):
         return None
+    return val
+
+
+def _strip_null_bytes(val):
+    """Recursively strip null bytes (\\u0000) from strings, lists, and dicts."""
+    if isinstance(val, str):
+        return val.replace("\x00", "")
+    if isinstance(val, list):
+        return [_strip_null_bytes(v) for v in val]
+    if isinstance(val, dict):
+        return {k: _strip_null_bytes(v) for k, v in val.items()}
     return val
