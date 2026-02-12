@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 
 from prefect import task
+from prefect.cache_policies import NO_CACHE
 from pydantic import BaseModel, Field
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -103,7 +104,8 @@ def push_first_iteration_to_supabase(domains_dict: dict[str, str], error: bool):
     return domain_to_record_id_path_map
 
 
-@task(name="website_crawling")
+# No cache policy and no caching results
+@task(name="website_crawling", cache_policy=NO_CACHE, cache_result_in_memory=False)
 def website_crawling(domains: list[str]):
     logger = get_logger()
     crawler = Crawler(rate_limit=5, max_retries=1, page_timeout=30000)
