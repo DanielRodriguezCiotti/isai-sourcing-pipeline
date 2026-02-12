@@ -38,7 +38,7 @@ class CompanyAnalysis(BaseModel):
     )
     key_partners: list[str] = Field(
         ...,
-        description="The key partners they have. Focus on Global 2000 companies, we are looking for big logos.",
+        description="The key partners they have. We are looking for all software or hardware partners!",
     )
     nb_of_clients_identified: int = Field(
         ..., description="The number of clients they have."

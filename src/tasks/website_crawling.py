@@ -21,7 +21,7 @@ You are an assistant that must validate if the provided homepage contains enough
 - How are their clients? Specific logos?
 - What are the use cases they are solving?
 - What is their tech stack?
-- What are the partners of the startup?
+- What are the partners of the startup? Software partners or hardware partners?
 
 Answer in JSON format with the following fields:
 - should_retrieve_more_pages: bool (True if you think there are more pages to retrieve in order to asses the previous questions, else False)
