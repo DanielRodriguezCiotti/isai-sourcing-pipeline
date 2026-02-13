@@ -5,7 +5,7 @@ This task computes the three fuzzy matching metrics "global_2000_clients", "comp
 from prefect import task
 
 from src.config.clients import get_supabase_client
-from src.utils.db import fetch_in_batches, upsert_in_batches
+from src.utils.db import fetch_in_batches, keep_latest_per_domain, upsert_in_batches
 from src.utils.fuzzy_matcher import CompanyFuzzyMatcher
 from src.utils.logger import get_logger
 
@@ -64,8 +64,9 @@ def fuzzy_matching_metrics(domains: list[str]):
         "web_scraping_enrichment",
         "domain",
         domains,
-        select="domain, key_clients, key_partners",
+        select="domain, key_clients, key_partners, updated_at",
     )
+    clients_and_partners = keep_latest_per_domain(clients_and_partners)
     all_clients_and_partners = []
     for record in clients_and_partners:
         if record["key_clients"] is not None:

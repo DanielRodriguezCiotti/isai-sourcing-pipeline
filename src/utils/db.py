@@ -19,6 +19,16 @@ def fetch_in_batches(
     return rows
 
 
+def keep_latest_per_domain(records: list[dict]) -> list[dict]:
+    """Keep only the latest record per domain based on updated_at."""
+    latest: dict[str, dict] = {}
+    for record in records:
+        domain = record["domain"]
+        if domain not in latest or record["updated_at"] > latest[domain]["updated_at"]:
+            latest[domain] = record
+    return list(latest.values())
+
+
 def fetch_as_dataframe(
     client, table: str, column: str, values: list[str]
 ) -> pd.DataFrame:

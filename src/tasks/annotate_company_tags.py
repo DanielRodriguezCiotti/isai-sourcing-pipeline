@@ -8,7 +8,7 @@ from prefect import task
 from pydantic import BaseModel, Field, create_model
 
 from src.config.clients import get_qa_model, get_supabase_client
-from src.utils.db import fetch_in_batches, upsert_in_batches
+from src.utils.db import fetch_in_batches, keep_latest_per_domain, upsert_in_batches
 from src.utils.logger import get_logger
 from src.utils.qa_model import ModelName, Question
 
@@ -28,8 +28,9 @@ You will be provided with an detailed description of a company.
 1. **Industries served:** The most important part of this analysis are the industries served by the provided company. Inspire from the uses cases and the solution description to identify this industries
 2. **The GTM Target:** The ambition is to identify the nature of the targetted clients. We want a first generic labellisation (gtm_target) but also a more refined labelisation for Build Venture (gtm_target_by). It's possible that this refined labellisation is not relevant, in that case leave it empty.
 3. **Business Model:** Identify the business model of the company among the provided list
-4. **Technology tags:** For the tech tags there is no specific list, you are free to put tags but keep it concise, accurate and relevant for VC sourcing!
-5. **No Hallucinations:** Do not hallucinate any information, only use the information provided in the input context
+4. **Business Map:** Associate a business from the list if relevant, else set to None
+5. **Technology tags:** For the tech tags there is no specific list, you are free to put tags but keep it concise, accurate and relevant for VC sourcing!
+6. **No Hallucinations:** Do not hallucinate any information, only use the information provided in the input context
 
 **Output Format:**
 Return only a valid JSON object following the `CompanyTags` schema provided.
@@ -59,6 +60,10 @@ class CompanyTags(BaseModel):
     )
     business_model: Literal["fake_bm", "fake_bm_2"] = Field(
         ..., description="The business model of the company"
+    )
+    business_map: Optional[Literal["fake_business", "fake_business_2"]] = Field(
+        None,
+        description="Associate a business from the list if relevant, else set to None",
     )
     tech_tags: list[str] = Field(..., description="Technology tags for this company")
 
@@ -171,12 +176,22 @@ def build_response_model_dynamically() -> tuple[BaseModel, dict, dict, str]:
         )
     business_model_tags_description = business_model_tags_description.strip()
 
+    # Business map parsing
+    business_map_data = client.table("business_mapping").select("*").execute().data
+    business_map_tags_description = "### Business Maps:\n"
+    for business_map in business_map_data:
+        business_map_tags_description += (
+            f"{business_map['name']}: {business_map['description']}\n"
+        )
+    business_map_tags_description = business_map_tags_description.strip()
+
     final_description = " ".join(
         [
             industry_tags_description,
             gtm_tags_description,
             gtm_by_tags_description,
             business_model_tags_description,
+            business_map_tags_description,
         ]
     )
 
@@ -187,11 +202,14 @@ def build_response_model_dynamically() -> tuple[BaseModel, dict, dict, str]:
     pydantic_model["properties"]["gtm_target"]["enum"] = [
         gtm["target"] for gtm in gtm_data
     ]
-    pydantic_model["properties"]["gtm_target_by"]["enum"] = [
+    pydantic_model["properties"]["gtm_target_by"]["anyOf"][0]["enum"] = [
         gtm_by["target"] for gtm_by in gtm_by_data
     ]
     pydantic_model["properties"]["business_model"]["enum"] = [
         business_model["name"] for business_model in business_model_data
+    ]
+    pydantic_model["properties"]["business_map"]["anyOf"][0]["enum"] = [
+        business_map["name"] for business_map in business_map_data
     ]
 
     return (
@@ -223,6 +241,7 @@ def retrieve_companies_web_enrichement(domains: list[str]) -> list[dict]:
     records = fetch_in_batches(
         get_supabase_client(), "web_scraping_enrichment", "domain", domains
     )
+    records = keep_latest_per_domain(records)
     # Drop all the record with empty description
     records = [record for record in records if record["description"] is not None]
     return records
@@ -305,6 +324,7 @@ def build_upsert_record(
                 "primary_industry_served_by": industry_tags[
                     "primary_industry_served_by"
                 ],
+                "business_mapping": answer.business_map,
             }
         )
 

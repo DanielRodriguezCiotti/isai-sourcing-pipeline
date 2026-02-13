@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     supabase_url: str = Field(alias="SUPABASE_URL")
     supabase_service_role_key: SecretStr = Field(alias="SUPABASE_SERVICE_ROLE_KEY")
     google_api_key: SecretStr = Field(alias="GOOGLE_API_KEY")
+    attio_cg_token: SecretStr = Field(alias="ATTIO_CG_TOKEN")
+    attio_by_token: SecretStr = Field(alias="ATTIO_BY_TOKEN")
     traxcn_exports_bucket_name: str = Field(
         alias="TRAXCN_EXPORTS_BUCKET_NAME", default="traxcn_exports"
     )
