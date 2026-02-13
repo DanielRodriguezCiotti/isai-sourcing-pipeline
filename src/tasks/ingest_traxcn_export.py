@@ -344,9 +344,6 @@ def parse_funding(df: pd.DataFrame) -> pd.DataFrame:
     cols_to_keep = [col for col in cols_to_keep if col in df.columns]
     df = df[cols_to_keep]
 
-    # drop duplicates on (round_date, domain_name, round_name)
-    df = df.drop_duplicates(subset=["round_date", "domain_name", "round_name"])
-
     # drop null in name
     df = df.dropna(subset=["company_name"])
 
@@ -382,6 +379,11 @@ def parse_funding(df: pd.DataFrame) -> pd.DataFrame:
     for col in comma_list_cols:
         if col in df.columns:
             df[col] = df[col].apply(comma2list)
+
+    # drop duplicates after all parsing/normalization to avoid conflicts from
+    # different raw formats resolving to the same values (e.g. date formats)
+    df = df.drop_duplicates(subset=["round_date", "domain_name", "round_name"])
+
     return df
 
 
