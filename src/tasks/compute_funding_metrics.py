@@ -6,7 +6,7 @@ This code computes the following metrics:
 - [x]  last_vc_round_date DATE, if the last_vc_round_date is available in companies table we use it, otherwise we take the latest date from funding_rounds table
 - [x]  last_vc_round_amount NUMERIC, if the last_vc_round_amount is available in companies table we use it, otherwise we take the amount of the last round from funding_rounds table
 - [x]  all_investors TEXT[], we concat all_investors from companies table with the concat of all_investors in funding_rounds for all date but the same source. Logic is the following, we have funding round from crunchbase and traxcn in funding rounds, so you will chose the source that has more entries and concat the list or all_investors for it. Donc forget to do a list(set) to remove duplicates
-- [x]  last_round_lead_investors TEXT, the list of all_investors for the last round in funding rounds table
+- [x]  last_round_lead_investors TEXT[], the list of all_investors for the last round in funding rounds table
 - [x]  total_number_of_funding_rounds INTEGER, the max cross sources btw number of entries in funding_rounds table for crunchbase and traxcn
 """
 
@@ -72,12 +72,17 @@ def _compute_for_company(company: dict, rounds: list[dict]) -> dict:
     all_investors = list(seen.values()) if seen else None
 
     # --- last_round_lead_investors ---
-    last_round_lead_investors = None
+    last_round_lead_investors: list[str] = []
     if dated_rounds:
         last_round = dated_rounds[-1]
         investors = last_round.get("all_investors") or []
         if investors:
-            last_round_lead_investors = ", ".join(investors)
+            clean_investors = [i.strip("'\"").strip() for i in investors]
+            seen: dict[str, str] = {}
+            for name in clean_investors:
+                if name and name.lower() not in seen:
+                    seen[name.lower()] = name
+            last_round_lead_investors = list(seen.values()) if seen else None
 
     # --- total_number_of_funding_rounds ---
     cb_count = len(cb_rounds)
@@ -161,11 +166,6 @@ def compute_funding_metrics(domains: list[str]):
 
 
 if __name__ == "__main__":
-    domains = [
-        "surface.design",
-        "getleo.ai",
-        # "threedy.io",
-        # "tandemai.io",
-        # "pcsemi.com",
-    ]
+    with open("to_compute.txt", "r") as f:
+        domains = f.read().splitlines()
     compute_funding_metrics(domains)
