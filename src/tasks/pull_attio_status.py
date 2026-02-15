@@ -133,6 +133,7 @@ def pull_attio_status(domains: list[str]):
     logger = get_logger()
     settings = get_settings()
 
+    domains = list(set(domains))
     logger.info(f"Pulling Attio status for {len(domains)} domains")
 
     # Pull from BY workspace
