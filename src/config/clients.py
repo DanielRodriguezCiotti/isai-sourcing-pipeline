@@ -2,6 +2,7 @@ import threading
 
 from supabase import Client, create_client
 
+from src.utils.feature_extractor import EmbeddingModel
 from src.utils.qa_model import QAModel
 
 from .settings import get_settings
@@ -35,3 +36,17 @@ def get_qa_model(max_workers: int = 10) -> QAModel:
                 max_workers=max_workers,
             )
     return _QA_MODEL
+
+
+_EMBEDDING_MODEL = None
+_embedding_model_lock = threading.Lock()
+
+
+def get_embedding_model() -> EmbeddingModel:
+    global _EMBEDDING_MODEL
+    if _EMBEDDING_MODEL is None:
+        with _embedding_model_lock:
+            _EMBEDDING_MODEL = EmbeddingModel(
+                api_key=get_settings().google_api_key.get_secret_value(),
+            )
+    return _EMBEDDING_MODEL
