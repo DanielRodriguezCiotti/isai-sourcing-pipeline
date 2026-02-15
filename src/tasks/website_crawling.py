@@ -39,6 +39,7 @@ concise_reason: "The homepage contains enough information to answer the previous
 pages_to_retrieve: []
 
 Focus on pages about the solution, the use cases, the clients, the succes stories.
+RULE : provide full urls with 'https://' ! All results must be valid urls!
 """
 
 
@@ -108,8 +109,8 @@ def push_first_iteration_to_supabase(domains_dict: dict[str, str], error: bool):
 @task(name="website_crawling", cache_policy=NO_CACHE, cache_result_in_memory=False)
 def website_crawling(domains: list[str]):
     logger = get_logger()
-    crawler = Crawler(rate_limit=5, max_retries=1, page_timeout=30000)
-    qa_model = get_qa_model(max_workers=20)
+    crawler = Crawler(rate_limit=5, max_retries=3, page_timeout=45000)
+    qa_model = get_qa_model()
     qa_model.log_cost(logger)
     logger.info(f"Starting website enrichment for {len(domains)} domains")
 
@@ -132,8 +133,8 @@ def website_crawling(domains: list[str]):
     )
     if len(crawl_output.errors) > 0:
         errors_dict = {
-            url.replace("https://", ""): content
-            for url, content in crawl_output.errors.items()
+            url.replace("https://", ""): crawl_error.browser_error
+            for url, crawl_error in crawl_output.errors.items()
         }
         push_first_iteration_to_supabase(errors_dict, error=True)
     website_cawlings = {

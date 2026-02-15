@@ -141,7 +141,7 @@ def website_ai_parsing(list_of_inputs: list[WebsiteEnrichmentQAInput]):
         qa_requests.append(question)
         company_ids.append(input.company_id)
         domains.append(input.domain)
-    qa_model = get_qa_model(max_workers=20)
+    qa_model = get_qa_model()
     qa_model.log_cost(logger)
     answers = qa_model(qa_requests, model_name=ModelName.GEMINI_3_FLASH_PREVIEW)
     logger.info(f"Website AI parsing completed for {len(answers)} companies")

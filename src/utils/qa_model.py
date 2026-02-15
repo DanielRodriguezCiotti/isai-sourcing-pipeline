@@ -1,7 +1,7 @@
 import json
 import logging
 import threading
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from enum import Enum
 from typing import Generic, List, Optional, TypeVar, Union
@@ -160,7 +160,7 @@ class QAModel:
     @retry(
         retry=retry_if_exception(_is_retryable_error.__func__),
         wait=wait_exponential(multiplier=2, min=4, max=60),
-        stop=stop_after_attempt(5),
+        stop=stop_after_attempt(6),
         reraise=True,
     )
     def _generate_content_with_retry(
@@ -239,24 +239,26 @@ class QAModel:
 
         results = {}
         total = len(VQARequest)
-        counter = 0
+        completed = 0
         failed = 0
-        for i, future in futures.items():
+        future_to_idx = {f: i for i, f in futures.items()}
+        for future in as_completed(future_to_idx):
+            i = future_to_idx[future]
             try:
                 results[i] = future.result()
-                counter += 1
-                if counter % 10 == 0:
-                    self.logger.info(f"Processed {counter}/{total} requests")
             except Exception as e:
                 self.logger.error(
                     f"Request {i} failed after retries: {type(e).__name__}: {e}"
                 )
                 results[i] = None
                 failed += 1
+            completed += 1
+            if completed % 10 == 0 or completed == total:
+                self.logger.info(f"Processed {completed}/{total} requests ({failed} failed)")
 
         if failed:
             self.logger.warning(
-                f"{failed}/{len(VQARequest)} requests failed and returned None"
+                f"{failed}/{total} requests failed and returned None"
             )
 
         # Sort results by index to maintain order
