@@ -12,8 +12,10 @@ from src.utils.logger import get_logger
 FINAL_COLUMN_MAPPING = {
     "by_competitors": "competitors_by",
     "by_platforms": "platforms_by",
+    "by_affiliates": "affiliates_by",
     "cg_competitors": "competitors_cg",
     "cg_sw_platforms": "platforms_cg",
+    "cg_affiliates": "affiliates_cg",
     "global_2000": "global_2000_clients",
 }
 
@@ -39,6 +41,14 @@ def load_references():
         record["name"]
         for record in client.table("cap_sw_partners").select("name").execute().data
     ]
+    by_affiliates = [
+        record["name"]
+        for record in client.table("by_affiliates").select("name").execute().data
+    ]
+    cg_affiliates = [
+        record["name"]
+        for record in client.table("cap_affiliates").select("name").execute().data
+    ]
     global_2000 = [
         record["name"]
         for record in client.table("global_2000").select("name").execute().data
@@ -46,8 +56,10 @@ def load_references():
     return {
         "by_competitors": by_competitors,
         "by_platforms": by_platforms,
+        "by_affiliates": by_affiliates,
         "cg_competitors": cg_competitors,
         "cg_sw_platforms": cg_sw_platforms,
+        "cg_affiliates": cg_affiliates,
         "global_2000": global_2000,
     }
 
@@ -101,9 +113,7 @@ def fuzzy_matching_metrics(domains: list[str]):
             for client_or_partner in list(set(record_client_and_partners)):
                 identified_reference = mapping.get(client_or_partner)
                 if identified_reference is not None:
-                    identified_list.append(
-                        f"{identified_reference} ({client_or_partner})"
-                    )
+                    identified_list.append(identified_reference)
             record[column_name] = identified_list
 
         records_to_upsert.append(record)

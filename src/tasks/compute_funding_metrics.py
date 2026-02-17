@@ -88,7 +88,6 @@ def _compute_for_company(company: dict, rounds: list[dict]) -> dict:
     cb_count = len(cb_rounds)
     tx_count = len(tx_rounds)
     total_number = max(cb_count, tx_count) if (cb_count or tx_count) else None
-
     return {
         "domain": domain,
         "vc_current_stage": vc_current_stage,
@@ -163,9 +162,3 @@ def compute_funding_metrics(domains: list[str]):
         logger.info("No records to upsert")
 
     logger.info("compute_funding_metrics complete")
-
-
-if __name__ == "__main__":
-    with open("to_compute.txt", "r") as f:
-        domains = f.read().splitlines()
-    compute_funding_metrics(domains)

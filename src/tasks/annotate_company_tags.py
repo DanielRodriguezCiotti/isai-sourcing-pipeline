@@ -302,6 +302,8 @@ def build_upsert_record(
 ) -> list[dict]:
     upsert_records = []
     for source_record, answer in zip(source_records, answers):
+        if answer is None:
+            continue
         industry_tags = deduced_industry_tags(
             answer.sorted_industries_served,
             industry_to_scope_mapping,

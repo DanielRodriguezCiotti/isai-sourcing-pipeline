@@ -1,6 +1,9 @@
 from .annotate_company_tags import annotate_company_tags
 from .companies_reconciliation import companies_reconciliation
+from .compute_founders_values import compute_founders_values
 from .compute_funding_metrics import compute_funding_metrics
+from .compute_scores import compute_scores
+from .embed_textual_dimensions import embed_textual_dimensions
 from .founders_reconciliation import founders_reconciliation
 from .funding_rounds_reconciliation import funding_rounds_reconciliation
 from .fuzzy_matching_metrics import fuzzy_matching_metrics
@@ -20,5 +23,8 @@ __all__ = [
     "annotate_company_tags",
     "pull_attio_status",
     "fuzzy_matching_metrics",
+    "compute_founders_values",
     "compute_funding_metrics",
+    "compute_scores",
+    "embed_textual_dimensions",
 ]

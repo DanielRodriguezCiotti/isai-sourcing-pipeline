@@ -77,13 +77,3 @@ def embed_textual_dimensions(domains: list[str]):
     upsert_in_batches(
         client, "company_embeddings", rows, on_conflict="domain", logger=logger
     )
-
-
-if __name__ == "__main__":
-    with open("by_scoring_domains_filtered.txt", "r") as f:
-        by_scoring_domains = f.read().splitlines()
-    with open("cap_scoring_domains_filtered.txt", "r") as f:
-        cap_scoring_domains = f.read().splitlines()
-    all_domains = list(set(by_scoring_domains + cap_scoring_domains))
-    print(f"Number of domains in all_domains: {len(all_domains)}")
-    embed_textual_dimensions(all_domains)

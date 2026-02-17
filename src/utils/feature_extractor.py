@@ -11,7 +11,7 @@ from typing import List
 import numpy as np
 from google import genai
 from google.genai import types
-from google.genai.errors import ClientError
+from google.genai.errors import ClientError, ServerError
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from src.utils.logger import get_logger
@@ -67,14 +67,18 @@ class EmbeddingModel:
     @staticmethod
     def _is_retryable_error(exception: Exception) -> bool:
         """Check if an exception is retryable (rate limits, server errors)"""
-        if isinstance(exception, ClientError):
+        if isinstance(exception, ServerError):
             return exception.code in {408, 429, 500, 503, 504}
+        if isinstance(exception, ClientError):
+            return exception.code == 429
+        if isinstance(exception, (ConnectionError, TimeoutError, OSError)):
+            return True
         return False
 
     @retry(
         retry=retry_if_exception(_is_retryable_error.__func__),
-        wait=wait_exponential(multiplier=1, min=2, max=16),
-        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=2, min=4, max=60),
+        stop=stop_after_attempt(6),
         reraise=True,
     )
     def _embed_with_retry(self, texts: List[str]) -> types.EmbedContentResponse:

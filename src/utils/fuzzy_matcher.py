@@ -96,39 +96,3 @@ class CompanyFuzzyMatcher:
         for name in tqdm(inputs, desc="Matching batch"):
             results.append(self.match_single(name))
         return results
-
-
-# ==========================================
-# USAGE EXAMPLE
-# ==========================================
-
-if __name__ == "__main__":
-    # 1. Setup Data (2000 references vs 1000 inputs simulation)
-    # Note: 'cleanco' handles variations like 'Limited', 'GmbH', 'S.A.'
-    with open("global_2000.txt", "r") as f:
-        refs = f.readlines()
-    refs = list(set([ref.strip() for ref in refs]))
-
-    with open("clients.txt", "r") as f:
-        inputs = f.readlines()
-    inputs = list(set([input.strip() for input in inputs]))
-
-    # 2. Initialize Matcher
-    # Scorer Recommendation:
-    # - fuzz.token_set_ratio: Best generic choice (handles "Apple" vs "Apple Computers" well)
-    # - fuzz.ratio: Use if you want strict equality (only allowing small typos)
-    matcher = CompanyFuzzyMatcher(references=refs, scorer=fuzz.ratio, threshold=85)
-
-    # 3. Run Batch
-    results = matcher.match_batch(inputs)
-
-    # 4. Display Results
-    import pandas as pd
-
-    df = pd.DataFrame(results)
-
-    # Save only matches to csv sorted by score descending
-    df[df["match"].notnull()].sort_values(by="score", ascending=False).to_csv(
-        "matches_bis.csv", index=False
-    )
-    print("Saved matches to matches.csv")
