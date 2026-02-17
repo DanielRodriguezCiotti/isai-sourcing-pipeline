@@ -135,7 +135,7 @@ class QAModel:
     def __call__(
         self,
         VQARequest: Question | List[Question],
-        model_name: ModelName = ModelName.GEMINI_2_5_FLASH_LITE_PREVIEW_09_2025,
+        model_name: ModelName = ModelName.GEMINI_2_5_FLASH_LITE,
     ) -> Answer[BaseModel] | List[Optional[Answer[BaseModel]]]:
         if isinstance(VQARequest, Question):
             return self._process_single_request(VQARequest, model_name)
