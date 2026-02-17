@@ -35,9 +35,17 @@ class ModelName(Enum):
                 "input": 0.5,
                 "output": 3.0,
             },
+            ModelName.GEMINI_2_5_FLASH: {
+                "input": 0.3,
+                "output": 2.5,
+            },
             ModelName.GEMINI_2_5_FLASH_PREVIEW_09_2025: {
                 "input": 0.3,
                 "output": 2.5,
+            },
+            ModelName.GEMINI_2_5_FLASH_LITE_PREVIEW_09_2025: {
+                "input": 0.1,
+                "output": 0.4,
             },
         }
         return costs[model_name]
