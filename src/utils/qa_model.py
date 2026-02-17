@@ -135,7 +135,7 @@ class QAModel:
     def __call__(
         self,
         VQARequest: Question | List[Question],
-        model_name: ModelName = ModelName.GEMINI_2_5_FLASH_PREVIEW_09_2025,
+        model_name: ModelName = ModelName.GEMINI_2_5_FLASH_LITE_PREVIEW_09_2025,
     ) -> Answer[BaseModel] | List[Optional[Answer[BaseModel]]]:
         if isinstance(VQARequest, Question):
             return self._process_single_request(VQARequest, model_name)
@@ -254,12 +254,12 @@ class QAModel:
                 failed += 1
             completed += 1
             if completed % 10 == 0 or completed == total:
-                self.logger.info(f"Processed {completed}/{total} requests ({failed} failed)")
+                self.logger.info(
+                    f"Processed {completed}/{total} requests ({failed} failed)"
+                )
 
         if failed:
-            self.logger.warning(
-                f"{failed}/{total} requests failed and returned None"
-            )
+            self.logger.warning(f"{failed}/{total} requests failed and returned None")
 
         # Sort results by index to maintain order
         return [results[i] for i in sorted(results.keys())]
