@@ -61,15 +61,15 @@ def get_dealflow_details(api_token, domains_list):
             # Extract Values using V2 structure (arrays of objects)
             entry_vals = entry.get("entry_values", {})
 
-            # 1. Status
+            # 1. Status (status or status_3 keys)
             status_val = (
                 entry_vals.get("status", [{}])[0].get("status", {}).get("title")
-            )
+            ) or (entry_vals.get("status_3", [{}])[0].get("status", {}).get("title"))
 
-            # 2. Stage (dd_stage_1)
+            # 2. Stage (dd_stage_1 or dd_stage keys)
             stage_val = (
                 entry_vals.get("dd_stage_1", [{}])[0].get("status", {}).get("title")
-            )
+            ) or (entry_vals.get("dd_stage", [{}])[0].get("option", {}).get("title"))
             if status_val or stage_val:
                 found_entries_map[p_id] = {"status": status_val, "stage": stage_val}
 
@@ -78,7 +78,6 @@ def get_dealflow_details(api_token, domains_list):
         if "resp_entries" in locals():
             print(resp_entries.text)
         return results
-
     if not parent_record_ids:
         return results
 
