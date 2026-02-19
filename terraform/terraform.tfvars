@@ -4,7 +4,7 @@ project_name = "isai-etl"
 aws_region   = "eu-north-1"
 
 # Network variables
-vpc_id              = "vpc-000302e4328136292"
+vpc_id              = "vpc-0d8792a657a498d03"
 azs                 = ["eu-north-1a", "eu-north-1b"]
 public_subnet_cidrs = ["172.31.64.0/20", "172.31.80.0/20"]
 

@@ -20,8 +20,28 @@
                 "image": "{{ image }}",
                 "secrets": [
                     {
-                        "name": "LLM_API_KEY",
-                        "valueFrom": "${secrets_arn}:llm-api-key::"
+                        "name": "GOOGLE_API_KEY",
+                        "valueFrom": "${secrets_arn}:google-api-key::"
+                    },
+                    {
+                        "name": "DEALROOM_API_KEY",
+                        "valueFrom": "${secrets_arn}:dealroom-api-key::"
+                    },
+                    {
+                        "name": "SUPABASE_URL",
+                        "valueFrom": "${secrets_arn}:supabase-url::"
+                    },
+                    {
+                        "name": "SUPABASE_SERVICE_ROLE_KEY",
+                        "valueFrom": "${secrets_arn}:supabase-service-role-key::"
+                    },
+                    {
+                        "name": "ATTIO_BY_TOKEN",
+                        "valueFrom": "${secrets_arn}:attio-by-token::"
+                    },
+                    {
+                        "name": "ATTIO_CG_TOKEN",
+                        "valueFrom": "${secrets_arn}:attio-cg-token::"
                     }
                 ]
             }

@@ -39,8 +39,38 @@ variable "public_subnet_cidrs" {
 
 # Secrets variables
 
-variable "llm_api_key" {
-  description = "LLM API Key"
+variable "google_api_key" {
+  description = "Google API Key"
+  type        = string
+  sensitive   = true
+}
+
+variable "dealroom_api_key" {
+  description = "Dealroom API Key"
+  type        = string
+  sensitive   = true
+}
+
+variable "supabase_url" {
+  description = "Supabase URL"
+  type        = string
+  sensitive   = true
+}
+
+variable "supabase_service_role_key" {
+  description = "Supabase Service Role Key"
+  type        = string
+  sensitive   = true
+}
+
+variable "attio_by_token" {
+  description = "Attio BY Token"
+  type        = string
+  sensitive   = true
+}
+
+variable "attio_cg_token" {
+  description = "Attio CG Token"
   type        = string
   sensitive   = true
 }

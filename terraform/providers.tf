@@ -1,4 +1,10 @@
 terraform {
+  backend "s3" {
+    bucket = "isai-sourcing-tf-state"
+    key    = "terraform.tfstate"
+    region = "eu-north-1"
+  }
+
   required_providers {
     prefect = {
       source  = "prefecthq/prefect"

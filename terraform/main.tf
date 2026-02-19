@@ -28,7 +28,12 @@ module "secrets" {
   name_prefix = local.name_prefix
   tags        = local.common_tags
   secrets = {
-    llm-api-key = var.llm_api_key
+    google-api-key            = var.google_api_key
+    dealroom-api-key          = var.dealroom_api_key
+    supabase-url              = var.supabase_url
+    supabase-service-role-key = var.supabase_service_role_key
+    attio-by-token            = var.attio_by_token
+    attio-cg-token            = var.attio_cg_token
   }
 }
 
