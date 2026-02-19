@@ -57,7 +57,7 @@ jobs:
           IMAGE_TAG: latest
           ENV: dev
         run: |
-          uv run --only-group build prefect deploy --prefect-file prefect.prod.yaml --all
+          uv run --only-group build prefect deploy --prefect-file prefect.yaml --all
 
 
       - name: Deployment Summary
