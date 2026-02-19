@@ -1,0 +1,35 @@
+# Virtual environments
+.venv/
+
+# Data files
+data/
+
+# Terraform
+terraform/
+
+# Git
+.git/
+.github/
+
+# Python artifacts
+__pycache__/
+*.py[oc]
+*.egg-info/
+build/
+dist/
+wheels/
+
+# Scripts / notebooks
+scripts/
+how_tos/
+assets/
+
+# Secrets & local config
+.env
+.claude/
+.mcp.json
+CLAUDE.md
+
+# Misc
+.DS_Store
+README.md

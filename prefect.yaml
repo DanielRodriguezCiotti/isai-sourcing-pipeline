@@ -1,0 +1,53 @@
+# Production Prefect Configuration
+prefect-version: 3.4.2
+name: workflows
+
+build:
+- prefect_docker.deployments.steps.build_docker_image:
+    id: build-image
+    image_name: "{{ $AWS_ECR_REPOSITORY }}"
+    tag: "{{ $IMAGE_TAG }}"
+    dockerfile: Dockerfile
+
+push:
+- prefect.deployments.steps.run_shell_script:
+    id: ecr-login
+    script: |
+      /bin/sh -c 'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPOSITORY'
+    stream_output: true
+    expand_env_vars: true
+- prefect_docker.deployments.steps.push_docker_image:
+    image_name: "{{ $AWS_ECR_REPOSITORY }}"
+    tag: "{{ $IMAGE_TAG }}"
+
+definitions:
+  work_pools:
+    ecspool: &ecspool
+      name: ecs-push-pool
+
+  actions:
+    pull_action: &pull_action
+      - prefect.deployments.steps.set_working_directory:
+          directory: /data-pipeline/
+
+deployments:
+
+- name: reconciliation-deployment
+  version: 0.1.0
+  tags: ["prod", "reconciliation"]
+  description: "Prod reconciliation deployment"
+  schedule:
+  concurrency_limit: 20
+  entrypoint: src/flows/reconciliation.py:reconciliation_flow
+  parameters:
+    domains: 
+      - google.com
+  work_pool: *ecspool
+  job_variables:
+    cpu: 512
+    family: reconciliation
+    memory: 2048
+    cloudwatch_logs_options:
+      awslogs-stream-prefix: reconciliation
+  pull: *pull_action
+
