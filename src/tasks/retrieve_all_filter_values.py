@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 from datetime import datetime, timezone
 
 from prefect import task
@@ -40,7 +41,7 @@ MULTITAG_COLUMNS: list[str] = [
 
 _VIEW_NAME = "sourcing_view"
 _PAGE_SIZE = 1000
-_MAX_VALUES_PER_COLUMN = 2000
+_MAX_VALUES_PER_COLUMN = 500
 
 
 @task(name="retrieve_all_filter_values")
@@ -52,8 +53,8 @@ def retrieve_all_filter_values() -> None:
     all_cols = TAG_COLUMNS + MULTITAG_COLUMNS
     select_str = ",".join(all_cols)
 
-    tag_sets: dict[str, set[str]] = {col: set() for col in TAG_COLUMNS}
-    multitag_sets: dict[str, set[str]] = {col: set() for col in MULTITAG_COLUMNS}
+    tag_counters: dict[str, Counter] = {col: Counter() for col in TAG_COLUMNS}
+    multitag_counters: dict[str, Counter] = {col: Counter() for col in MULTITAG_COLUMNS}
 
     offset = 0
     while True:
@@ -70,28 +71,29 @@ def retrieve_all_filter_values() -> None:
 
         for row in page:
             for col in TAG_COLUMNS:
-                if len(tag_sets[col]) >= _MAX_VALUES_PER_COLUMN:
-                    continue
                 v = row.get(col)
                 if v is not None:
-                    tag_sets[col].add(v)
+                    tag_counters[col][v] += 1
 
             for col in MULTITAG_COLUMNS:
-                if len(multitag_sets[col]) >= _MAX_VALUES_PER_COLUMN:
-                    continue
                 arr = row.get(col)
                 if arr:
-                    for item in arr:
-                        multitag_sets[col].add(item)
-                        if len(multitag_sets[col]) >= _MAX_VALUES_PER_COLUMN:
-                            break
+                    multitag_counters[col].update(arr)
 
         if len(page) < _PAGE_SIZE:
             break
         offset += _PAGE_SIZE
 
-    tag_columns = {col: sorted(tag_sets[col]) for col in TAG_COLUMNS}
-    multitag_columns = {col: sorted(multitag_sets[col]) for col in MULTITAG_COLUMNS}
+    tag_columns = {
+        col: sorted(v for v, _ in tag_counters[col].most_common(_MAX_VALUES_PER_COLUMN))
+        for col in TAG_COLUMNS
+    }
+    multitag_columns = {
+        col: sorted(
+            v for v, _ in multitag_counters[col].most_common(_MAX_VALUES_PER_COLUMN)
+        )
+        for col in MULTITAG_COLUMNS
+    }
 
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
