@@ -39,7 +39,7 @@ def embed_and_compute_scores(domains: list[str], scores_enabled: bool = True):
         compute_scores(domains)
 
 
-@flow(name="business-processing-flow", task_runner=ThreadPoolTaskRunner(max_workers=4))
+@flow(name="business-processing-flow", task_runner=ThreadPoolTaskRunner(max_workers=8))
 def business_processing_flow(
     domains: list[str],
     config: Optional[BusinessProcessingConfig] = BusinessProcessingConfig(),

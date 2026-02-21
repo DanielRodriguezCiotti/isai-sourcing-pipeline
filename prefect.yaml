@@ -69,9 +69,9 @@ deployments:
   work_pool: 
     name: ecs-push-pool
     job_variables:
-      cpu: 2048
+      cpu: 4096
       family: full-pipeline
-      memory: 4096
+      memory: 8192
       cloudwatch_logs_options:
         awslogs-stream-prefix: full-pipeline
 
@@ -99,9 +99,9 @@ deployments:
   work_pool: 
     name: ecs-push-pool
     job_variables:
-      cpu: 2048
+      cpu: 4096
       family: enrichment
-      memory: 4096
+      memory: 8192
       cloudwatch_logs_options:
         awslogs-stream-prefix: enrichment
 
@@ -137,9 +137,9 @@ deployments:
   work_pool: 
     name: ecs-push-pool
     job_variables:
-      cpu: 2048
+      cpu: 4096
       family: business
-      memory: 4096
+      memory: 8192
       cloudwatch_logs_options:
         awslogs-stream-prefix: business
 
@@ -197,9 +197,9 @@ deployments:
   work_pool: 
     name: ecs-push-pool
     job_variables:
-      cpu: 2048
+      cpu: 4096
       family: website-enrichment
-      memory: 4096
+      memory: 8192
       cloudwatch_logs_options:
         awslogs-stream-prefix: reconciliation
 
