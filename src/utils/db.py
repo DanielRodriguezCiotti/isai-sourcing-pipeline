@@ -80,7 +80,12 @@ def insert_in_batches(client, table: str, records: list[dict], logger):
 
 
 def _is_deadlock(exc: Exception) -> bool:
-    return isinstance(exc, APIError) and bool(exc.args) and exc.args[0].get("code") == "40P01"
+    return (
+        isinstance(exc, APIError)
+        and bool(exc.args)
+        and isinstance(exc.args[0], dict)
+        and exc.args[0].get("code") == "40P01"
+    )
 
 
 @retry(
