@@ -47,6 +47,7 @@ def get_embedding_model() -> EmbeddingModel:
     if _EMBEDDING_MODEL is None:
         with _embedding_model_lock:
             _EMBEDDING_MODEL = EmbeddingModel(
+                output_dimensionality=1536,
                 api_key=get_settings().google_api_key.get_secret_value(),
             )
     return _EMBEDDING_MODEL

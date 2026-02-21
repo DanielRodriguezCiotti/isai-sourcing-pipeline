@@ -6,6 +6,7 @@ into normalized embedding vectors. It has no project-specific logic and can be
 used for any text embedding task.
 """
 
+from enum import Enum
 from typing import List
 
 import numpy as np
@@ -15,6 +16,14 @@ from google.genai.errors import ClientError, ServerError
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from src.utils.logger import get_logger
+
+
+class EmbeddingTaskType(str, Enum):
+    RETRIEVAL_QUERY = "RETRIEVAL_QUERY"
+    RETRIEVAL_DOCUMENT = "RETRIEVAL_DOCUMENT"
+    SEMANTIC_SIMILARITY = "SEMANTIC_SIMILARITY"
+    CLASSIFICATION = "CLASSIFICATION"
+    CLUSTERING = "CLUSTERING"
 
 
 class EmbeddingModel:
@@ -40,7 +49,7 @@ class EmbeddingModel:
         api_key: str,
         model_name: str = "gemini-embedding-001",
         output_dimensionality: int = 768,
-        task_type: str = "SEMANTIC_SIMILARITY",
+        task_type: EmbeddingTaskType = EmbeddingTaskType.SEMANTIC_SIMILARITY,
     ):
         """
         Initialize the embedding model.
@@ -81,12 +90,13 @@ class EmbeddingModel:
         stop=stop_after_attempt(6),
         reraise=True,
     )
-    def _embed_with_retry(self, texts: List[str]) -> types.EmbedContentResponse:
+    def _embed_with_retry(self, texts: List[str], task_type: EmbeddingTaskType) -> types.EmbedContentResponse:
         """
         Call the embedding API with retry logic.
 
         Args:
             texts: List of strings to embed
+            task_type: Task type to use for this embedding call
 
         Returns:
             EmbedContentResponse from the API
@@ -95,7 +105,7 @@ class EmbeddingModel:
             model=self.model_name,
             contents=texts,
             config=types.EmbedContentConfig(
-                task_type=self.task_type,
+                task_type=task_type.value,
                 output_dimensionality=self.output_dimensionality,
             ),
         )
@@ -125,7 +135,7 @@ class EmbeddingModel:
         normalized = embedding_array / norm
         return normalized.tolist()
 
-    def __call__(self, texts: List[str]) -> List[List[float]]:
+    def __call__(self, texts: List[str], task_type: EmbeddingTaskType | None = None) -> List[List[float]]:
         """
         Embed a list of text strings into normalized vectors.
 
@@ -157,16 +167,20 @@ class EmbeddingModel:
         if not all(isinstance(t, str) for t in texts):
             raise ValueError("All items in texts must be strings")
 
+        resolved_task_type = task_type if task_type is not None else self.task_type
         self.logger.debug(f"Embedding {len(texts)} texts with {self.model_name}")
 
         # Call API with batch embedding
-        response = self._embed_with_retry(texts)
+        response = self._embed_with_retry(texts, resolved_task_type)
 
-        # Extract and normalize embeddings
+        # Extract embeddings, normalizing when dimension < 3072 (Gemini only
+        # auto-normalizes at 3072 dimensions)
         normalized_embeddings = []
         for embedding in response.embeddings:
-            normalized = self._normalize_embedding(embedding.values)
-            normalized_embeddings.append(normalized)
+            if self.output_dimensionality < 3072:
+                normalized_embeddings.append(self._normalize_embedding(embedding.values))
+            else:
+                normalized_embeddings.append(list(embedding.values))
 
         self.logger.debug(
             f"Successfully embedded {len(normalized_embeddings)} texts "
