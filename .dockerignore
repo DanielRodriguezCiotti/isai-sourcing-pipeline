@@ -22,7 +22,6 @@ wheels/
 # Scripts / notebooks
 scripts/
 how_tos/
-assets/
 
 # Secrets & local config
 .env
