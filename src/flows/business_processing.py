@@ -19,8 +19,22 @@ from src.tasks import (
 
 def retrieve_all_domains_in_business_computed_values():
     client = get_supabase_client()
-    rows = client.table("business_computed_values").select("domain").execute().data
-    return [row["domain"] for row in rows]
+    page_size = 1000
+    offset = 0
+    domains = []
+    while True:
+        rows = (
+            client.table("business_computed_values")
+            .select("domain")
+            .range(offset, offset + page_size - 1)
+            .execute()
+            .data
+        )
+        domains.extend(row["domain"] for row in rows)
+        if len(rows) < page_size:
+            break
+        offset += page_size
+    return domains
 
 
 class BusinessProcessingConfig(BaseModel):
@@ -70,3 +84,8 @@ def business_processing_flow(
         )
         for future in parallel_tasks:
             future.result()
+
+
+if __name__ == "__main__":
+    domains = retrieve_all_domains_in_business_computed_values()
+    print("Number of domains:", len(domains))

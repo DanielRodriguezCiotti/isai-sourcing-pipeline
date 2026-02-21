@@ -402,14 +402,6 @@ def clean_row(row: dict) -> dict:
     return cleaned
 
 
-def get_existing_domains() -> pd.DataFrame:
-    """Filter out domains that already exist in the database."""
-    client = get_supabase_client()
-    existing_domains = client.table("traxcn_companies").select("domain_name").execute()
-    existing_domains = [domain["domain_name"] for domain in existing_domains]
-    return existing_domains
-
-
 def upsert_in_batches(
     table_name: str,
     df: pd.DataFrame,
