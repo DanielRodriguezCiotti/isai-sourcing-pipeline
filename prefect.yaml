@@ -132,6 +132,7 @@ deployments:
       compute_funding_metrics: true
       compute_founders_values: true
       annotate_company_tags: true
+      embed_textual_dimensions: true
       compute_scores: true
     recompute_all: false
   work_pool: 
