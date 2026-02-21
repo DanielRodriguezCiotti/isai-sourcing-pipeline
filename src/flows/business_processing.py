@@ -4,6 +4,7 @@ from prefect import flow, task
 from prefect.futures import wait
 from pydantic import BaseModel, Field
 
+from src.config.settings import get_settings
 from src.tasks import (
     annotate_company_tags,
     compute_founders_values,
@@ -13,6 +14,13 @@ from src.tasks import (
     fuzzy_matching_metrics,
     pull_attio_status,
 )
+from utils.db import get_supabase_client
+
+
+def retrieve_all_domains_in_business_computed_values():
+    client = get_supabase_client()
+    rows = client.table("business_computed_values").select("domain").execute().data
+    return [row["domain"] for row in rows]
 
 
 class BusinessProcessingConfig(BaseModel):
@@ -35,20 +43,29 @@ def embed_and_compute_scores(domains: list[str], scores_enabled: bool = True):
 def business_processing_flow(
     domains: list[str],
     config: Optional[BusinessProcessingConfig] = BusinessProcessingConfig(),
+    recompute_all: bool = False,
 ):
+    if recompute_all:
+        domains = retrieve_all_domains_in_business_computed_values()
     domains = list(set(domains))
-    parallel_tasks = []
-    if config.sync_attio_status:
-        parallel_tasks.append(pull_attio_status.submit(domains))
-    if config.compute_fuzzy_matching_metrics:
-        parallel_tasks.append(fuzzy_matching_metrics.submit(domains))
-    if config.compute_funding_metrics:
-        parallel_tasks.append(compute_funding_metrics.submit(domains))
-    if config.compute_founders_values:
-        parallel_tasks.append(compute_founders_values.submit(domains))
-    if config.annotate_company_tags:
-        parallel_tasks.append(annotate_company_tags.submit(domains))
-    parallel_tasks.append(
-        embed_and_compute_scores.submit(domains, config.compute_scores)
-    )
-    wait(parallel_tasks)
+    settings = get_settings()
+    batches = [
+        domains[i : i + settings.compute_business_metric_batch_size]
+        for i in range(0, len(domains), settings.compute_business_metric_batch_size)
+    ]
+    for batch in batches:
+        parallel_tasks = []
+        if config.sync_attio_status:
+            parallel_tasks.append(pull_attio_status.submit(batch))
+        if config.compute_fuzzy_matching_metrics:
+            parallel_tasks.append(fuzzy_matching_metrics.submit(batch))
+        if config.compute_funding_metrics:
+            parallel_tasks.append(compute_funding_metrics.submit(batch))
+        if config.compute_founders_values:
+            parallel_tasks.append(compute_founders_values.submit(batch))
+        if config.annotate_company_tags:
+            parallel_tasks.append(annotate_company_tags.submit(batch))
+        parallel_tasks.append(
+            embed_and_compute_scores.submit(batch, config.compute_scores)
+        )
+        wait(parallel_tasks)

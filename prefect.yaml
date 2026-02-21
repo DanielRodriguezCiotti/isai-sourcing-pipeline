@@ -28,6 +28,55 @@ definitions:
 
 deployments:
 
+- name: ingest-trigger-deployment
+  version: 0.1.0
+  tags: ["ingest-trigger"]
+  description: "Ingest trigger deployment"
+  schedule:
+  entrypoint: src/flows/ingest_trigger.py:ingest_trigger_flow
+  parameters:
+    supabase_file_path: dani_d_com_2026-02-11T21-16-58-551Z.xlsx
+  work_pool: 
+    name: ecs-push-pool
+    job_variables:
+      cpu: 1024
+      family: ingest-trigger
+      memory: 2048
+      cloudwatch_logs_options:
+        awslogs-stream-prefix: ingest-trigger
+
+  pull: *pull_action
+
+- name: full-pipeline-deployment
+  version: 0.1.0
+  tags: ["full-pipeline"]
+  description: "Full pipeline deployment"
+  schedule:
+  entrypoint: src/flows/full_pipeline.py:full_pipeline_flow
+  parameters:
+    domains: 
+      - aceiss.com
+      - acelfil.com
+      - acerta.ai
+      - acodis.io
+      - actifile.com
+      - activatedscale.com
+      - activecharge.us
+      - activecomply.com
+      - acumen.network
+      - adaptavate.com
+      - adaptional.com
+  work_pool: 
+    name: ecs-push-pool
+    job_variables:
+      cpu: 2048
+      family: full-pipeline
+      memory: 4096
+      cloudwatch_logs_options:
+        awslogs-stream-prefix: full-pipeline
+
+  pull: *pull_action
+
 - name: enrichment-deployment
   version: 0.1.0
   tags: ["enrichment"]
@@ -84,6 +133,7 @@ deployments:
       compute_founders_values: true
       annotate_company_tags: true
       compute_scores: true
+    recompute_all: false
   work_pool: 
     name: ecs-push-pool
     job_variables:

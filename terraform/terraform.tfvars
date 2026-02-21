@@ -22,5 +22,41 @@ task_env_vars = [
   {
       name  = "PREFECT_FLOWS_HEARTBEAT_FREQUENCY"
       value = "30"
+  },
+  {
+    name = "TRAXCN_EXPORTS_BUCKET_NAME"
+    value = "traxcn_exports"
+  },
+  {
+    name = "WEBSITES_BUCKET_NAME"
+    value = "websites"
+  },
+  {
+    name = "BATCH_SIZE"
+    value = "200"
+  },
+  {
+    name = "PARALLEL_BATCHES"
+    value = "2"
+  },
+  {
+    name = "ESTIMATED_TIME_PER_BATCH"
+    value = "120"
+  },
+  {
+    name = "OFFSET_BETWEEN_PARALLEL_BATCHES"
+    value = "3"
+  },
+  {
+    name = "FULL_PIPELINE_DEPLOYMENT_NAME"
+    value = "full-pipeline-flow/full-pipeline-deployment"
+  },
+  {
+    name = "WEBSITE_ENRICHMENT_BATCH_SIZE"
+    value = "20"
+  },
+  {
+    name = "COMPUTE_BUSINESS_METRIC_BATCH_SIZE"
+    value = "200"
   }
 ]
