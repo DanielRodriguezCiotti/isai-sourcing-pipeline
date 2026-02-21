@@ -1,4 +1,5 @@
 from .annotate_company_tags import annotate_company_tags
+from .retrieve_all_filter_values import retrieve_all_filter_values
 from .companies_reconciliation import companies_reconciliation
 from .compute_founders_values import compute_founders_values
 from .compute_funding_metrics import compute_funding_metrics
@@ -29,4 +30,5 @@ __all__ = [
     "compute_scores",
     "embed_textual_dimensions",
     "schedule_pipeline_runs",
+    "retrieve_all_filter_values",
 ]

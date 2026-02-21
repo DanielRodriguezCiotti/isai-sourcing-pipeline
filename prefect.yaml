@@ -205,4 +205,21 @@ deployments:
 
   pull: *pull_action
 
-
+- name: compute-search-resources-deployment
+  version: 0.1.0
+  tags: ["search-resources"]
+  description: "Pre-computes tag/multitag enum values for AI Search and stores them in the search_ressources bucket"
+  schedule:
+    cron: "*/30 * * * *"
+    timezone: "UTC"
+  entrypoint: src/flows/compute_search_resources.py:compute_search_resources_flow
+  parameters: {}
+  work_pool:
+    name: ecs-push-pool
+    job_variables:
+      cpu: 1024
+      family: compute-search-resources
+      memory: 2048
+      cloudwatch_logs_options:
+        awslogs-stream-prefix: compute-search-resources
+  pull: *pull_action

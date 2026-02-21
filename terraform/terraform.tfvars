@@ -58,5 +58,9 @@ task_env_vars = [
   {
     name = "COMPUTE_BUSINESS_METRIC_BATCH_SIZE"
     value = "200"
+  },
+  {
+    name = "SEARCH_RESOURCES_BUCKET_NAME"
+    value = "search_ressources"
   }
 ]

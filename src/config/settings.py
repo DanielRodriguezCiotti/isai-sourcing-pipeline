@@ -16,6 +16,9 @@ class Settings(BaseSettings):
         alias="TRAXCN_EXPORTS_BUCKET_NAME", default="traxcn_exports"
     )
     websites_bucket_name: str = Field(alias="WEBSITES_BUCKET_NAME", default="websites")
+    search_resources_bucket_name: str = Field(
+        alias="SEARCH_RESOURCES_BUCKET_NAME", default="search_ressources"
+    )
     batch_size: int = Field(alias="BATCH_SIZE", default=200)
     parallel_batches: int = Field(alias="PARALLEL_BATCHES", default=4)
     estimated_time_per_batch_minutes: int = Field(
