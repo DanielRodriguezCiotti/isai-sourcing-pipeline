@@ -14,7 +14,7 @@ from src.tasks import (
     fuzzy_matching_metrics,
     pull_attio_status,
 )
-from utils.db import get_supabase_client
+from src.utils.db import get_supabase_client
 
 
 def retrieve_all_domains_in_business_computed_values():

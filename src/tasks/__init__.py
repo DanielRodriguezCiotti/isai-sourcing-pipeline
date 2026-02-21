@@ -9,6 +9,7 @@ from .funding_rounds_reconciliation import funding_rounds_reconciliation
 from .fuzzy_matching_metrics import fuzzy_matching_metrics
 from .ingest_traxcn_export import ingest_traxcn_export
 from .pull_attio_status import pull_attio_status
+from .schedule_pipeline_runs import schedule_pipeline_runs
 from .website_ai_parsing import WebsiteEnrichmentQAInput, website_ai_parsing
 from .website_crawling import website_crawling
 
@@ -27,4 +28,5 @@ __all__ = [
     "compute_funding_metrics",
     "compute_scores",
     "embed_textual_dimensions",
+    "schedule_pipeline_runs",
 ]
