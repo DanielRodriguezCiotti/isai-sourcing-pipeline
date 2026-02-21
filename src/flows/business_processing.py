@@ -15,6 +15,7 @@ from src.tasks import (
     fuzzy_matching_metrics,
     pull_attio_status,
 )
+from src.utils.logger import get_logger
 
 
 def retrieve_all_domains_in_business_computed_values():
@@ -59,15 +60,19 @@ def business_processing_flow(
     config: Optional[BusinessProcessingConfig] = BusinessProcessingConfig(),
     recompute_all: bool = False,
 ):
+    logger = get_logger()
     if recompute_all:
         domains = retrieve_all_domains_in_business_computed_values()
     domains = list(set(domains))
+    logger.info(f"Processing {len(domains)} domains")
     settings = get_settings()
     batches = [
         domains[i : i + settings.compute_business_metric_batch_size]
         for i in range(0, len(domains), settings.compute_business_metric_batch_size)
     ]
-    for batch in batches:
+    logger.info(f"Processing {len(batches)} batches")
+    for i, batch in enumerate(batches):
+        logger.info(f"Processing batch {i + 1}/{len(batches)}")
         parallel_tasks = []
         if config.sync_attio_status:
             parallel_tasks.append(pull_attio_status.submit(batch))

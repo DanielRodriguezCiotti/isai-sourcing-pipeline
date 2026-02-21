@@ -2,20 +2,42 @@
 
 import math
 
+import httpx
 import pandas as pd
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 BATCH_SIZE = 1000
 
 
+@retry(
+    retry=retry_if_exception_type(httpx.RemoteProtocolError),
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=2, max=30),
+    reraise=True,
+)
+def _fetch_batch(client, table: str, select: str, column: str, batch: list) -> list:
+    resp = client.table(table).select(select).in_(column, batch).execute()
+    return resp.data
+
+
 def fetch_in_batches(
-    client, table: str, column: str, values: list, select: str = "*"
+    client,
+    table: str,
+    column: str,
+    values: list,
+    select: str = "*",
+    batch_size: int = BATCH_SIZE,
 ) -> list[dict]:
     """Fetch rows from a Supabase table filtering column IN values, batched."""
     rows: list[dict] = []
-    for i in range(0, len(values), BATCH_SIZE):
-        batch = values[i : i + BATCH_SIZE]
-        resp = client.table(table).select(select).in_(column, batch).execute()
-        rows.extend(resp.data)
+    for i in range(0, len(values), batch_size):
+        batch = values[i : i + batch_size]
+        rows.extend(_fetch_batch(client, table, select, column, batch))
     return rows
 
 

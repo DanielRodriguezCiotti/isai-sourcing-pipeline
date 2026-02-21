@@ -52,6 +52,7 @@ def funding_rounds_reconciliation(domains: list[str]):
             "crunchbase_funding_rounds",
             "crunchbase_company_uuid",
             cb_ids,
+            batch_size=500,
         )
         logger.info(f"Fetched {len(cb_rounds)} crunchbase funding rounds")
 
@@ -76,6 +77,7 @@ def funding_rounds_reconciliation(domains: list[str]):
         "traxcn_funding_rounds",
         "domain_name",
         domains,
+        batch_size=500,
     )
     logger.info(f"Fetched {len(tx_rounds)} traxcn funding rounds")
 

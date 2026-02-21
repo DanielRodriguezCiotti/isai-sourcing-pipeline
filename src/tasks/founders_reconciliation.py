@@ -73,6 +73,7 @@ def founders_reconciliation(domains: list[str]):
             "crunchbase_founders",
             "crunchbase_company_uuid",
             cb_ids,
+            batch_size=500,
         )
         logger.info(f"Fetched {len(cb_founders)} crunchbase founders")
 
@@ -97,6 +98,7 @@ def founders_reconciliation(domains: list[str]):
             "traxcn_founders",
             "domain_name",
             tx_domains,
+            batch_size=500,
         )
         logger.info(f"Fetched {len(tx_founders)} traxcn founders")
 
