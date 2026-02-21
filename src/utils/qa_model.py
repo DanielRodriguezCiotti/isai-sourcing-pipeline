@@ -247,7 +247,6 @@ class QAModel:
 
         results = {}
         total = len(VQARequest)
-        completed = 0
         failed = 0
         future_to_idx = {f: i for i, f in futures.items()}
         for future in as_completed(future_to_idx):
@@ -260,11 +259,6 @@ class QAModel:
                 )
                 results[i] = None
                 failed += 1
-            completed += 1
-            if completed % 10 == 0 or completed == total:
-                self.logger.info(
-                    f"Processed {completed}/{total} requests ({failed} failed)"
-                )
 
         if failed:
             self.logger.warning(f"{failed}/{total} requests failed and returned None")

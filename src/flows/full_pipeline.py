@@ -7,8 +7,10 @@ from src.tasks import (
     ingest_traxcn_export,
 )
 
+@task(name="sumbit_and_track_batch")
+def sumbit_and_track_batch(batch: list[str]):
 
-@flow(name="reconciliation-flow")
+@flow(name="full-pipeline-flow")
 def full_pipeline_flow(supabase_file_path: str):
     domains = ingest_traxcn_export(supabase_file_path)
     batch_size = 500

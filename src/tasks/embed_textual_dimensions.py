@@ -54,14 +54,14 @@ def embed_textual_dimensions(domains: list[str]):
 
     # 3. Embed in chunks
     all_vectors: list[list[float]] = []
+    nb_batches = (len(texts) // EMBED_BATCH_SIZE) + 1 * (
+        len(texts) % EMBED_BATCH_SIZE != 0
+    )
     for i in range(0, len(texts), EMBED_BATCH_SIZE):
         chunk = texts[i : i + EMBED_BATCH_SIZE]
         vectors = embedder(chunk)
         all_vectors.extend(vectors)
-        logger.info(
-            f"Embedded chunk {i // EMBED_BATCH_SIZE + 1}/"
-            f"{(len(texts) - 1) // EMBED_BATCH_SIZE + 1}"
-        )
+        logger.info(f"Embedded chunk {i // EMBED_BATCH_SIZE + 1}/{nb_batches}")
 
     # 4. Map vectors back to records
     upsert_records: dict[int, dict] = {}

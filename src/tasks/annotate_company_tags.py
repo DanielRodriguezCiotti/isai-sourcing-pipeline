@@ -333,6 +333,23 @@ def build_upsert_record(
     return upsert_records
 
 
+def call_qa_by_batches(
+    questions: list[Question], model_name: ModelName, batch_size: int = 50
+):
+    answers = []
+    qa_model = get_qa_model()
+    logger = get_logger()
+    logger.info(f"Calling QA model for {len(questions)} domains")
+    nb_batches = (len(questions) // batch_size) + 1 * (len(questions) % batch_size != 0)
+    for i in range(0, len(questions), batch_size):
+        logger.info(f"Processing batch {i // batch_size + 1}/{nb_batches}")
+        batch = questions[i : i + batch_size]
+        answers.extend(qa_model(batch, model_name=model_name))
+    qa_model.log_cost(logger)
+
+    return answers
+
+
 @task(name="annotate_company_tags")
 def annotate_company_tags(domains: list[str]):
     logger = get_logger()
@@ -343,7 +360,6 @@ def annotate_company_tags(domains: list[str]):
         industry_to_sector_mapping,
         final_description,
     ) = build_response_model_dynamically()
-    qa_model = get_qa_model(max_workers=20)
     records = retrieve_companies_web_enrichement(domains)
     logger.info(f"Retrieved {len(records)} records from web enrichment")
     system_prompt = SYSTEM_PROMPT + final_description
@@ -359,7 +375,8 @@ def annotate_company_tags(domains: list[str]):
         )
         requests.append(question)
     logger.info("Calling model for tagging")
-    responses = qa_model(requests, model_name=ModelName.GEMINI_3_FLASH_PREVIEW)
+    responses = call_qa_by_batches(requests, ModelName.GEMINI_3_FLASH_PREVIEW)
+    logger.info(f"Annotated {len(responses)} companies")
     records_to_upsert = build_upsert_record(
         records, responses, industry_to_scope_mapping, industry_to_sector_mapping
     )

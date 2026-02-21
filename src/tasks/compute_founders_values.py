@@ -28,6 +28,23 @@ Rules:
 """
 
 
+def call_qa_by_batches(
+    questions: list[Question], model_name: ModelName, batch_size: int = 50
+):
+    answers = []
+    qa_model = get_qa_model()
+    logger = get_logger()
+    logger.info(f"Calling QA model for {len(questions)} domains")
+    nb_batches = (len(questions) // batch_size) + 1 * (len(questions) % batch_size != 0)
+    for i in range(0, len(questions), batch_size):
+        logger.info(f"Processing batch {i // batch_size + 1}/{nb_batches}")
+        batch = questions[i : i + batch_size]
+        answers.extend(qa_model(batch, model_name=model_name))
+    qa_model.log_cost(logger)
+
+    return answers
+
+
 @task(name="compute_founders_values")
 def compute_founders_values(domains: list[str]):
     logger = get_logger()
@@ -102,10 +119,7 @@ def compute_founders_values(domains: list[str]):
     # Step 5 – Call QA model
     answers = []
     if questions:
-        qa_model = get_qa_model(max_workers=10)
-        logger.info(f"Calling QA model for {len(questions)} domains")
-        answers = qa_model(questions, model_name=ModelName.GEMINI_3_FLASH_PREVIEW)
-        qa_model.log_cost(logger)
+        answers = call_qa_by_batches(questions, ModelName.GEMINI_3_FLASH_PREVIEW)
 
     # Step 6 – Build answer map
     answer_map: dict[str, SerialEntrepreneurAnalysis | None] = {}

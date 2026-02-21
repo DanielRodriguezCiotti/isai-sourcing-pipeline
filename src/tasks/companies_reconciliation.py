@@ -190,7 +190,7 @@ def companies_reconciliation(domains: list[str]):
     client = get_supabase_client()
     country_codes = _load_country_codes()
 
-    logger.info(f"Starting reconciliation for {len(domains)} domains")
+    logger.info(f"Starting companies reconciliation for {len(domains)} domains")
 
     # Step 1 – pull crunchbase data
     cb_df = fetch_as_dataframe(client, "crunchbase_companies", "domain", domains)
@@ -264,4 +264,4 @@ def companies_reconciliation(domains: list[str]):
     logger.info(f"Pushing {len(cleaned)} records to companies table")
     upsert_in_batches(client, "companies", cleaned, on_conflict="domain", logger=logger)
 
-    logger.info("Reconciliation complete")
+    logger.info("Companies reconciliation complete")
