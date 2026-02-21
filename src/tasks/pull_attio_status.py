@@ -16,9 +16,26 @@ def get_dealflow_details(api_token, domains_list):
     2. Queries Company records to map those entries back to the specific domains.
     3. Returns { domain: { status: ..., stage: ... } or None }
     """
+    logger = get_logger()
 
     # Initialize results with None
     results = {domain: None for domain in domains_list}
+
+    if not domains_list:
+        return results
+
+    # Clean domains: strip protocol, path, whitespace; skip None/empty
+    def _clean_domain(d):
+        if not d or not isinstance(d, str):
+            return None
+        d = d.strip().lower()
+        for prefix in ("https://", "http://"):
+            if d.startswith(prefix):
+                d = d[len(prefix) :]
+        d = d.split("/")[0].split("?")[0].strip()
+        return d if d else None
+
+    domains_list = [c for d in domains_list if (c := _clean_domain(d)) is not None]
 
     if not domains_list:
         return results
@@ -43,16 +60,59 @@ def get_dealflow_details(api_token, domains_list):
             }
         )
 
-    entries_payload = {
-        "filter": {"$or": or_filter},
-    }
-
     found_entries_map = {}  # Maps record_id -> {status, stage}
     parent_record_ids = set()
 
-    try:
-        resp_entries = requests.post(entries_url, headers=headers, json=entries_payload)
-        resp_entries.raise_for_status()
+    # Self-healing query: if Attio rejects a domain (e.g. fake TLD), drop it and retry.
+    max_removals = len(or_filter)
+    removals = 0
+    while or_filter:
+        if removals > max_removals:
+            logger.warning("Too many invalid domains removed; aborting Step 1.")
+            return results
+
+        resp_entries = requests.post(
+            entries_url,
+            headers=headers,
+            json={"filter": {"$or": or_filter}},
+        )
+
+        if resp_entries.status_code == 400:
+            try:
+                err = resp_entries.json()
+            except Exception:
+                err = {}
+            path = err.get("path", [])
+            if (
+                err.get("code") == "validation_type"
+                and len(path) >= 2
+                and path[0] == "$or"
+            ):
+                try:
+                    bad_idx = int(path[1])
+                    bad_domain = or_filter[bad_idx]["constraints"].get(
+                        "root_domain", "?"
+                    )
+                    logger.info(
+                        f"  -> Skipping invalid domain at $or[{bad_idx}]: {bad_domain!r}"
+                    )
+                    or_filter.pop(bad_idx)
+                    removals += 1
+                    continue
+                except (ValueError, IndexError, KeyError):
+                    pass
+            # Non-recoverable 400
+            logger.error(
+                f"Error in Step 1 (List Entries): {resp_entries.status_code} {resp_entries.text}"
+            )
+            return results
+
+        try:
+            resp_entries.raise_for_status()
+        except Exception as e:
+            logger.error(f"Error in Step 1 (List Entries): {e}")
+            return results
+
         entries_data = resp_entries.json().get("data", [])
         for entry in entries_data:
             p_id = entry["parent_record_id"]
@@ -72,12 +132,7 @@ def get_dealflow_details(api_token, domains_list):
             ) or (entry_vals.get("dd_stage", [{}])[0].get("option", {}).get("title"))
             if status_val or stage_val:
                 found_entries_map[p_id] = {"status": status_val, "stage": stage_val}
-
-    except Exception as e:
-        print(f"Error in Step 1 (List Entries): {e}")
-        if "resp_entries" in locals():
-            print(resp_entries.text)
-        return results
+        break  # success
     if not parent_record_ids:
         return results
 
@@ -118,7 +173,7 @@ def get_dealflow_details(api_token, domains_list):
                         results[d] = entry_details
 
     except Exception as e:
-        print(f"Error in Step 2 (Companies): {e}")
+        logger.error(f"Error in Step 2 (Companies): {e}")
 
     return results
 

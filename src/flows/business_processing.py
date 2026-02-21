@@ -89,8 +89,3 @@ def business_processing_flow(
         )
         for future in parallel_tasks:
             future.result()
-
-
-if __name__ == "__main__":
-    domains = retrieve_all_domains_in_business_computed_values()
-    print("Number of domains:", len(domains))

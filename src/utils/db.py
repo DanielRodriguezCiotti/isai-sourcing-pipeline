@@ -4,8 +4,10 @@ import math
 
 import httpx
 import pandas as pd
+from postgrest.exceptions import APIError
 from tenacity import (
     retry,
+    retry_if_exception,
     retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
@@ -77,14 +79,31 @@ def insert_in_batches(client, table: str, records: list[dict], logger):
         logger.info(f"Inserted batch {i // BATCH_SIZE + 1}/{total_batches}")
 
 
+def _is_deadlock(exc: Exception) -> bool:
+    return isinstance(exc, APIError) and bool(exc.args) and exc.args[0].get("code") == "40P01"
+
+
+@retry(
+    retry=retry_if_exception(_is_deadlock),
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=1, max=15),
+    reraise=True,
+)
+def _upsert_batch(client, table: str, batch: list, on_conflict: str) -> None:
+    client.table(table).upsert(batch, on_conflict=on_conflict).execute()
+
+
 def upsert_in_batches(
     client, table: str, records: list[dict], on_conflict: str, logger
 ):
     """Upsert records into a Supabase table in batches."""
+    # Sort by conflict column so concurrent tasks acquire row locks in the
+    # same order, which eliminates most deadlocks structurally.
+    records = sorted(records, key=lambda r: r.get(on_conflict) or "")
     total_batches = math.ceil(len(records) / BATCH_SIZE) if records else 0
     for i in range(0, len(records), BATCH_SIZE):
         batch = [_strip_null_bytes(r) for r in records[i : i + BATCH_SIZE]]
-        client.table(table).upsert(batch, on_conflict=on_conflict).execute()
+        _upsert_batch(client, table, batch, on_conflict)
         logger.info(f"Upserted batch {i // BATCH_SIZE + 1}/{total_batches}")
 
 
