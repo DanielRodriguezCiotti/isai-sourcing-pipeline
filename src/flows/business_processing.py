@@ -4,6 +4,7 @@ from prefect import flow, task
 from prefect.futures import wait
 from pydantic import BaseModel, Field
 
+from src.config.clients import get_supabase_client
 from src.config.settings import get_settings
 from src.tasks import (
     annotate_company_tags,
@@ -14,7 +15,6 @@ from src.tasks import (
     fuzzy_matching_metrics,
     pull_attio_status,
 )
-from src.utils.db import get_supabase_client
 
 
 def retrieve_all_domains_in_business_computed_values():
