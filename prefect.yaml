@@ -2,23 +2,23 @@
 prefect-version: 3.4.2
 name: workflows
 
-# build:
-# - prefect_docker.deployments.steps.build_docker_image:
-#     id: build-image
-#     image_name: "{{ $AWS_ECR_REPOSITORY }}"
-#     tag: "{{ $IMAGE_TAG }}"
-#     dockerfile: Dockerfile
+build:
+- prefect_docker.deployments.steps.build_docker_image:
+    id: build-image
+    image_name: "{{ $AWS_ECR_REPOSITORY }}"
+    tag: "{{ $IMAGE_TAG }}"
+    dockerfile: Dockerfile
 
-# push:
-# - prefect.deployments.steps.run_shell_script:
-#     id: ecr-login
-#     script: |
-#       /bin/sh -c 'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPOSITORY'
-#     stream_output: true
-#     expand_env_vars: true
-# - prefect_docker.deployments.steps.push_docker_image:
-#     image_name: "{{ $AWS_ECR_REPOSITORY }}"
-#     tag: "{{ $IMAGE_TAG }}"
+push:
+- prefect.deployments.steps.run_shell_script:
+    id: ecr-login
+    script: |
+      /bin/sh -c 'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPOSITORY'
+    stream_output: true
+    expand_env_vars: true
+- prefect_docker.deployments.steps.push_docker_image:
+    image_name: "{{ $AWS_ECR_REPOSITORY }}"
+    tag: "{{ $IMAGE_TAG }}"
 
 definitions:
   actions:
