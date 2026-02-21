@@ -11,7 +11,7 @@ from .website_enrichment import website_enrichment_task
 
 
 @flow(name="enrichment-flow")
-def enrichment_pipeline_flow(domains: list[str]):
+def enrichment_flow(domains: list[str]):
     domains = list(set(domains))
     companies_reconciliation(domains)
     parallel_tasks = [

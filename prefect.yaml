@@ -33,7 +33,7 @@ deployments:
   tags: ["enrichment"]
   description: "Enrichment deployment"
   schedule:
-  entrypoint: src/flows/enrichment.py:enrichment_pipeline_flow
+  entrypoint: src/flows/enrichment.py:enrichment_flow
   parameters:
     domains: 
       - aceiss.com
@@ -63,7 +63,7 @@ deployments:
   tags: ["business-processing"]
   description: "Business processing deployment"
   schedule:
-  entrypoint: src/flows/business_processing.py:business_processing_pipeline_flow
+  entrypoint: src/flows/business_processing.py:business_processing_flow
   parameters:
     domains: 
       - aceiss.com
