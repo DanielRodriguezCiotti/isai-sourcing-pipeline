@@ -23,6 +23,12 @@ resource "aws_iam_role_policy_attachment" "task_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+
+resource "aws_iam_role_policy_attachment" "cloudwatch_access_task_execution" {
+  role       = aws_iam_role.task_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+}
+
 # Add Secrets Manager permissions to task execution role
 resource "aws_iam_role_policy" "task_execution_secrets" {
   name = "${var.name_prefix}-task-execution-secrets-policy"
