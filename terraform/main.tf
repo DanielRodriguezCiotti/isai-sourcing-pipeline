@@ -94,3 +94,12 @@ module "prefect_workpools" {
   secrets_arn           = module.secrets.secret_arn
 }
 
+## Prefect Automations
+module "prefect_automations" {
+  source = "./modules/prefect_automations"
+
+  environment = var.environment
+  workspace_id = var.prefect_config.workspace_id
+
+  crash_zombie_flows_enabled = true
+}

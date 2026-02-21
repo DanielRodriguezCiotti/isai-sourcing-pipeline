@@ -45,3 +45,8 @@ output "secret_name" {
   description = "Name of the secret"
   value       = module.secrets.secret_name
 }
+
+output "prefect_automations_names" {
+  description = "Names of the prefect automations"
+  value       = module.prefect_automations.automation_names
+}

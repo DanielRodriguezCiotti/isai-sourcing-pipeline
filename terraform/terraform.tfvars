@@ -18,5 +18,9 @@ task_env_vars = [
   {
     name  = "ENV"
     value = "dev"
+  },
+  {
+      name  = "PREFECT_FLOWS_HEARTBEAT_FREQUENCY"
+      value = "30"
   }
 ]
