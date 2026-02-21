@@ -1,7 +1,6 @@
 from typing import Optional
 
 from prefect import flow, task
-from prefect.futures import wait
 from pydantic import BaseModel, Field
 
 from src.config.clients import get_supabase_client
@@ -68,4 +67,5 @@ def business_processing_flow(
         parallel_tasks.append(
             embed_and_compute_scores.submit(batch, config.compute_scores)
         )
-        wait(parallel_tasks)
+        for future in parallel_tasks:
+            future.result()

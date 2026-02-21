@@ -1,5 +1,4 @@
 from prefect import flow
-from prefect.futures import wait
 
 from src.tasks import (
     companies_reconciliation,
@@ -19,4 +18,5 @@ def enrichment_flow(domains: list[str]):
         funding_rounds_reconciliation.submit(domains),
         website_enrichment_task.submit(domains),
     ]
-    wait(parallel_tasks)
+    for future in parallel_tasks:
+        future.result()
