@@ -301,6 +301,7 @@
       "cloudwatch_logs_options": {
         "type": "object",
         "title": "Cloudwatch Logs Options",
+        "default": { "awslogs-group": "${log_group_name}" },
         "description": "When `configure_cloudwatch_logs` is enabled, this setting may be used to pass additional options to the CloudWatch logs configuration or override the default options. See the [AWS documentation](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_awslogs.html#create_awslogs_logdriver_options.) for available options. ",
         "additionalProperties": {
           "type": "string"

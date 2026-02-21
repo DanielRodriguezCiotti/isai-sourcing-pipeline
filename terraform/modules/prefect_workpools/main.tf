@@ -32,7 +32,8 @@ resource "prefect_work_pool" "ecs_work_pool" {
     execution_role_arn = var.execution_role_arn
     subnets            = var.subnets
     security_groups    = var.security_groups
-    pool_memory   = var.pool_memory
-    pool_cpu = var.pool_cpu
+    pool_memory        = var.pool_memory
+    pool_cpu           = var.pool_cpu
+    log_group_name     = var.log_group_name
   })
 }

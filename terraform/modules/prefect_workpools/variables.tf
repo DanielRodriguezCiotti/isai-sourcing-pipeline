@@ -104,3 +104,8 @@ variable "secrets_arn" {
   default     = ""
 }
 
+variable "log_group_name" {
+  description = "CloudWatch log group name for ECS task logs"
+  type        = string
+}
+

@@ -8,3 +8,9 @@ resource "aws_ecs_cluster" "main" {
 
   tags = var.tags
 }
+
+resource "aws_cloudwatch_log_group" "ecs" {
+  name              = "/ecs/${var.name_prefix}"
+  retention_in_days = 7
+  tags              = var.tags
+}

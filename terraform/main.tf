@@ -91,7 +91,10 @@ module "prefect_workpools" {
   region_name           = var.aws_region
   
   # Secrets configuration
-  secrets_arn           = module.secrets.secret_arn
+  secrets_arn    = module.secrets.secret_arn
+
+  # CloudWatch logging
+  log_group_name = module.ecs.log_group_name
 }
 
 ## Prefect Automations
