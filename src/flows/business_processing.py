@@ -1,6 +1,7 @@
 from typing import Optional
 
 from prefect import flow, task
+from prefect.task_runners import ThreadPoolTaskRunner
 from pydantic import BaseModel, Field
 
 from src.config.clients import get_supabase_client
@@ -38,7 +39,7 @@ def embed_and_compute_scores(domains: list[str], scores_enabled: bool = True):
         compute_scores(domains)
 
 
-@flow(name="business-processing-flow")
+@flow(name="business-processing-flow", task_runner=ThreadPoolTaskRunner(max_workers=4))
 def business_processing_flow(
     domains: list[str],
     config: Optional[BusinessProcessingConfig] = BusinessProcessingConfig(),
