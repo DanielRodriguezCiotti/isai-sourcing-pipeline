@@ -9,6 +9,7 @@ COPY pyproject.toml /data-pipeline/pyproject.toml
 COPY uv.lock /data-pipeline/uv.lock
 
 RUN uv sync --only-group base
+RUN uv run crawl4ai-setup
 
 COPY src /data-pipeline/src
 COPY assets /data-pipeline/assets
