@@ -32,6 +32,10 @@ task_env_vars = [
     value = "websites"
   },
   {
+    name = "DEALROOM_BUCKET_NAME"
+    value = "dealroom"
+  },
+  {
     name = "BATCH_SIZE"
     value = "200"
   },

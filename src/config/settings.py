@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     search_resources_bucket_name: str = Field(
         alias="SEARCH_RESOURCES_BUCKET_NAME", default="search_ressources"
     )
+    dealroom_bucket_name: str = Field(alias="DEALROOM_BUCKET_NAME", default="dealroom")
+    dealroom_api_key: SecretStr = Field(alias="DEALROOM_API_KEY")
     batch_size: int = Field(alias="BATCH_SIZE", default=200)
     parallel_batches: int = Field(alias="PARALLEL_BATCHES", default=4)
     estimated_time_per_batch_minutes: int = Field(

@@ -42,6 +42,10 @@
                     {
                         "name": "ATTIO_CG_TOKEN",
                         "valueFrom": "${secrets_arn}:attio-cg-token::"
+                    },
+                    {
+                        "name": "DEALROOM_API_KEY",
+                        "valueFrom": "${secrets_arn}:dealroom-api-key::"
                     }
                 ]
             }
