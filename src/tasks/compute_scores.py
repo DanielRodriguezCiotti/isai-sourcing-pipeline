@@ -11,6 +11,7 @@ import json
 
 import numpy as np
 from prefect import task
+from prefect.tasks import exponential_backoff
 
 from src.config.clients import get_supabase_client
 from src.utils.db import fetch_in_batches, upsert_in_batches
@@ -27,7 +28,7 @@ def _parse_embedding(raw) -> np.ndarray | None:
     return np.array(json.loads(raw), dtype=np.float32)
 
 
-@task(name="compute_scores")
+@task(name="compute_scores", retries=3, retry_delay_seconds=exponential_backoff(backoff_factor=2))
 def compute_scores(domains: list[str]):
     logger = get_logger()
     client = get_supabase_client()

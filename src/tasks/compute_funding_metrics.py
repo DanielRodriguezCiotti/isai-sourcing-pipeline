@@ -11,6 +11,7 @@ This code computes the following metrics:
 """
 
 from prefect import task
+from prefect.tasks import exponential_backoff
 
 from src.config.clients import get_supabase_client
 from src.utils.db import fetch_in_batches, upsert_in_batches
@@ -101,7 +102,7 @@ def _compute_for_company(company: dict, rounds: list[dict]) -> dict:
     }
 
 
-@task(name="compute_funding_metrics")
+@task(name="compute_funding_metrics", retries=3, retry_delay_seconds=exponential_backoff(backoff_factor=2))
 def compute_funding_metrics(domains: list[str]):
     logger = get_logger()
     client = get_supabase_client()

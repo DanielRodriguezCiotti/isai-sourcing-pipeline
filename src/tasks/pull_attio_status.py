@@ -2,6 +2,7 @@ import time
 
 import requests
 from prefect import task
+from prefect.tasks import exponential_backoff
 from tqdm import tqdm
 
 from src.config.clients import get_supabase_client
@@ -178,7 +179,7 @@ def get_dealflow_details(api_token, domains_list):
     return results
 
 
-@task(name="pull_attio_status")
+@task(name="pull_attio_status", retries=3, retry_delay_seconds=exponential_backoff(backoff_factor=2))
 def pull_attio_status(domains: list[str]):
     """
     Pull dealflow status from both Attio workspaces (BY and CG),

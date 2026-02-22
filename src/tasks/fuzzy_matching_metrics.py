@@ -3,6 +3,7 @@ This task computes the three fuzzy matching metrics "global_2000_clients", "comp
 """
 
 from prefect import task
+from prefect.tasks import exponential_backoff
 
 from src.config.clients import get_supabase_client
 from src.utils.db import fetch_in_batches, keep_latest_per_domain, upsert_in_batches
@@ -64,7 +65,7 @@ def load_references():
     }
 
 
-@task(name="fuzzy_matching_metrics")
+@task(name="fuzzy_matching_metrics", retries=3, retry_delay_seconds=exponential_backoff(backoff_factor=2))
 def fuzzy_matching_metrics(domains: list[str]):
     """
     This task computes the three fuzzy matching metrics "global_2000_clients", "competitors_cg", "competitors_by_name"
