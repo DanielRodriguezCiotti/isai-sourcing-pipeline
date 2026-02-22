@@ -7,7 +7,7 @@ from src.tasks import (
 )
 
 
-@flow(name="reconciliation-flow")
+@flow(name="reconciliation-flow", timeout_seconds=1200)  # 20 minutes
 def reconciliation_flow(domains: list[str]):
     domains = list(set(domains))
     companies_reconciliation(domains)

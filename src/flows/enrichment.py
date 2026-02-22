@@ -9,7 +9,7 @@ from src.tasks import (  # dealroom_enrichment,
 from .website_enrichment import website_enrichment_task
 
 
-@flow(name="enrichment-flow")
+@flow(name="enrichment-flow", timeout_seconds=7200)  # 2 hours
 def enrichment_flow(domains: list[str]):
     domains = list(set(domains))
     companies_reconciliation(domains)

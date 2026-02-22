@@ -27,7 +27,7 @@ def website_enrichment_task(domains: list[str]):
     logger.info("Website enrichment completed")
 
 
-@flow(name="website-enrichment-flow")
+@flow(name="website-enrichment-flow", timeout_seconds=7200)  # 2 hours
 def website_enrichment_flow(domains: list[str]):
     settings = get_settings()
     domains = list(set(domains))
