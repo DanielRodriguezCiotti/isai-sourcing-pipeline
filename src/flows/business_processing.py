@@ -88,7 +88,7 @@ def business_processing_flow(
             parallel_tasks.append(compute_founders_values.submit(batch))
         if config.annotate_company_tags:
             parallel_tasks.append(annotate_company_tags.submit(batch))
-        if any(config.embed_textual_dimensions, config.compute_scores):
+        if any([config.embed_textual_dimensions, config.compute_scores]):
             parallel_tasks.append(
                 embed_and_compute_scores.submit(
                     batch, config.embed_textual_dimensions, config.compute_scores
