@@ -238,27 +238,37 @@ class QAModel:
         self, VQARequest: List[Question], model_name: ModelName
     ) -> List[Optional[Answer[BaseModel]]]:
         """Process multiple VQA requests in parallel using ThreadPoolExecutor"""
-        futures = {}
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            for i, request in enumerate(VQARequest):
-                futures[i] = executor.submit(
-                    self._process_single_request, request, model_name
-                )
-
         results = {}
         total = len(VQARequest)
         failed = 0
-        future_to_idx = {f: i for i, f in futures.items()}
-        for future in as_completed(future_to_idx):
-            i = future_to_idx[future]
-            try:
-                results[i] = future.result()
-            except Exception as e:
-                self.logger.error(
-                    f"Request {i} failed after retries: {type(e).__name__}: {e}"
-                )
-                results[i] = None
-                failed += 1
+        resource_exhausted_count = 0
+        RESOURCE_EXHAUSTED_LIMIT = 30
+
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            future_to_idx = {
+                executor.submit(self._process_single_request, request, model_name): i
+                for i, request in enumerate(VQARequest)
+            }
+
+            for future in as_completed(future_to_idx):
+                i = future_to_idx[future]
+                try:
+                    results[i] = future.result()
+                except Exception as e:
+                    self.logger.error(
+                        f"Request {i} failed after retries: {type(e).__name__}: {e}"
+                    )
+                    results[i] = None
+                    failed += 1
+                    if isinstance(e, ClientError) and e.code == 429:
+                        resource_exhausted_count += 1
+                        if resource_exhausted_count >= RESOURCE_EXHAUSTED_LIMIT:
+                            for f in future_to_idx:
+                                f.cancel()
+                            raise RuntimeError(
+                                f"Aborting: {resource_exhausted_count} RESOURCE_EXHAUSTED (429) errors "
+                                f"reached limit of {RESOURCE_EXHAUSTED_LIMIT}. Quota exhausted."
+                            )
 
         if failed:
             self.logger.warning(f"{failed}/{total} requests failed and returned None")

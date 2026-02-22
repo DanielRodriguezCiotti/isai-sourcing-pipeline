@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     dealroom_bucket_name: str = Field(alias="DEALROOM_BUCKET_NAME", default="dealroom")
     dealroom_api_key: SecretStr = Field(alias="DEALROOM_API_KEY")
     batch_size: int = Field(alias="BATCH_SIZE", default=200)
-    parallel_batches: int = Field(alias="PARALLEL_BATCHES", default=4)
+    parallel_batches: int = Field(alias="PARALLEL_BATCHES", default=2)
     estimated_time_per_batch_minutes: int = Field(
         alias="ESTIMATED_TIME_PER_BATCH", default=120
     )
