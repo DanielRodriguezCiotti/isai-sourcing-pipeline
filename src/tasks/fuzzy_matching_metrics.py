@@ -65,7 +65,11 @@ def load_references():
     }
 
 
-@task(name="fuzzy_matching_metrics", retries=3, retry_delay_seconds=exponential_backoff(backoff_factor=2))
+@task(
+    name="fuzzy_matching_metrics",
+    retries=3,
+    retry_delay_seconds=exponential_backoff(backoff_factor=4),
+)
 def fuzzy_matching_metrics(domains: list[str]):
     """
     This task computes the three fuzzy matching metrics "global_2000_clients", "competitors_cg", "competitors_by_name"

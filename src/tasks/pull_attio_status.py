@@ -179,7 +179,11 @@ def get_dealflow_details(api_token, domains_list):
     return results
 
 
-@task(name="pull_attio_status", retries=3, retry_delay_seconds=exponential_backoff(backoff_factor=2))
+@task(
+    name="pull_attio_status",
+    retries=3,
+    retry_delay_seconds=exponential_backoff(backoff_factor=4),
+)
 def pull_attio_status(domains: list[str]):
     """
     Pull dealflow status from both Attio workspaces (BY and CG),

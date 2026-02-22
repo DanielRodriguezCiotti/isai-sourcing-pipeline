@@ -9,6 +9,7 @@ use crunchbase_founders. Otherwise use traxcn_founders.
 """
 
 from prefect import task
+from prefect.tasks import exponential_backoff
 
 from src.config.clients import get_supabase_client
 from src.utils.db import delete_in_batches, fetch_in_batches, insert_in_batches
@@ -19,7 +20,11 @@ from src.utils.logger import get_logger
 # ---------------------------------------------------------------------------
 
 
-@task(name="founders_reconciliation")
+@task(
+    name="founders_reconciliation",
+    retries=3,
+    retry_delay_seconds=exponential_backoff(backoff_factor=4),
+)
 def founders_reconciliation(domains: list[str]):
     logger = get_logger()
     client = get_supabase_client()

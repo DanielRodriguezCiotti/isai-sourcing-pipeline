@@ -28,7 +28,11 @@ def _parse_embedding(raw) -> np.ndarray | None:
     return np.array(json.loads(raw), dtype=np.float32)
 
 
-@task(name="compute_scores", retries=3, retry_delay_seconds=exponential_backoff(backoff_factor=2))
+@task(
+    name="compute_scores",
+    retries=3,
+    retry_delay_seconds=exponential_backoff(backoff_factor=4),
+)
 def compute_scores(domains: list[str]):
     logger = get_logger()
     client = get_supabase_client()

@@ -102,7 +102,11 @@ def _compute_for_company(company: dict, rounds: list[dict]) -> dict:
     }
 
 
-@task(name="compute_funding_metrics", retries=3, retry_delay_seconds=exponential_backoff(backoff_factor=2))
+@task(
+    name="compute_funding_metrics",
+    retries=3,
+    retry_delay_seconds=exponential_backoff(backoff_factor=4),
+)
 def compute_funding_metrics(domains: list[str]):
     logger = get_logger()
     client = get_supabase_client()

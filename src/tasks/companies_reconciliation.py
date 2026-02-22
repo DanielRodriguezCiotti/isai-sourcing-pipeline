@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 from prefect import task
+from prefect.tasks import exponential_backoff
 
 from src.config.clients import get_supabase_client
 from src.utils.db import fetch_as_dataframe, sanitize, upsert_in_batches
@@ -184,7 +185,11 @@ def reconciliation_all_tags(row) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-@task(name="companies_reconciliation")
+@task(
+    name="companies_reconciliation",
+    retries=3,
+    retry_delay_seconds=exponential_backoff(backoff_factor=4),
+)
 def companies_reconciliation(domains: list[str]):
     logger = get_logger()
     client = get_supabase_client()

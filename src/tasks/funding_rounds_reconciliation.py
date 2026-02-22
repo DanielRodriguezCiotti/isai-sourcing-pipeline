@@ -7,6 +7,7 @@ funding_rounds table in Supabase.
 """
 
 from prefect import task
+from prefect.tasks import exponential_backoff
 
 from src.config.clients import get_supabase_client
 from src.utils.db import fetch_in_batches, sanitize, upsert_in_batches
@@ -17,7 +18,11 @@ from src.utils.logger import get_logger
 # ---------------------------------------------------------------------------
 
 
-@task(name="funding_rounds_reconciliation")
+@task(
+    name="funding_rounds_reconciliation",
+    retries=3,
+    retry_delay_seconds=exponential_backoff(backoff_factor=4),
+)
 def funding_rounds_reconciliation(domains: list[str]):
     logger = get_logger()
     client = get_supabase_client()
